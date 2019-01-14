@@ -1,0 +1,24 @@
+{
+  "name": "healthbottestservice",
+  "version": "1.0.0",
+  "description": "Bot functional testing framework",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "healthbot",
+    "testing",
+    "functional"
+  ],
+  "author": "Arie Schwartzman + Gil Shacham",
+  "license": "MIT",
+  "dependencies": {
+    "chai": "^4.1.2",
+    "deep-object-diff": "^1.0.4",
+    "request": "^2.83.0",
+    "request-promise": "^4.2.2",
+    "restify": "^6.3.4",
+    "underscore": "^1.8.3"
+  }
+}
