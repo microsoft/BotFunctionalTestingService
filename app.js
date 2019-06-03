@@ -1,6 +1,7 @@
 var Context = require("./context.js");
 var TestData = require("./testData.js");
 var Test = require("./test");
+//check build configuration.
 
 var restify = require("restify");
 
