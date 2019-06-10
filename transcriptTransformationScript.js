@@ -31,7 +31,8 @@ function main(path) {
         removeSchemaAttribute(currEntry);
     }
     try{
-        fs.writeFileSync('transfromed.transcript', JSON.stringify(jsonTranscript));
+        const filename = path.replace(/^.*[\\\/]/, '').replace(/\.[^/.]+$/, '');
+        fs.writeFileSync(filename + '_transformed.transcript', JSON.stringify(jsonTranscript));
     }catch (e){
         console.log("Cannot write file ", e);
     }
