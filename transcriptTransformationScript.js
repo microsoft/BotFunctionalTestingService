@@ -31,7 +31,7 @@ function main(path) {
         removeSchemaAttribute(currEntry);
     }
     try{
-        const filename = path.replace(/^.*[\\\/]/, '').replace(/\.[^/.]+$/, '');
+        const filename = path.replace(/^.*[\\\/]/, '').replace(/\.[^/.]+$/, ''); // Extracts filename without extension from full path.
         fs.writeFileSync(filename + '_transformed.transcript', JSON.stringify(jsonTranscript));
     }catch (e){
         console.log("Cannot write file ", e);
