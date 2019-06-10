@@ -23,7 +23,14 @@ function removeSchemaAttribute(currEntry) {
 
 /** This is the main function - It iterates over all entries of the transcript, and applies all handlers on each entry **/
 function main(path) {
-    let contentBuffer = fs.readFileSync(path);
+    let contentBuffer;
+    try {
+        contentBuffer = fs.readFileSync(path);
+    }
+    catch (e) {
+        console.log("Cannot open file", e.path);
+        return;
+    }
     let jsonTranscript = JSON.parse(contentBuffer);
     for (let i = 0; i < jsonTranscript.length; i++) {
         let currEntry = jsonTranscript[i];
