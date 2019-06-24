@@ -25,7 +25,7 @@ class TestData {
     }
 
     get secret() {
-        return process.env[`BotSecret.${this.bot}`];
+        return JSON.parse(process.env['SECRETS'])[this.bot];
     }
 
     static async fromRequest(request) {
