@@ -25,14 +25,14 @@ class TestData {
     }
 
     get secret() {
-        var parsedSecret = null;
+        var extractedSecret = null;
         try {
-            parsedSecret = JSON.parse(process.env['SECRETS'])[this.bot];
+            extractedSecret = JSON.parse(process.env['SECRETS'])[this.bot];
         }
         catch {
             throw new Error("Invalid format of bot secrets JSON");
         }
-        return parsedSecret;
+        return extractedSecret;
     }
 
     static async fromRequest(request) {
