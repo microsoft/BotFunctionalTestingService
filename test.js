@@ -113,7 +113,7 @@ function testConversation(context, testUserId, conversationSteps, conversationId
 }
 
 function createUserMessage(message, testUserId) {
-    var userMessage = _.pick(message, "type", "text");
+    var userMessage = _.pick(message, "type", "text", "value");
     userMessage.from = {
         id: testUserId,
         name: "Test User"
