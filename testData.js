@@ -25,7 +25,14 @@ class TestData {
     }
 
     get secret() {
-        return process.env[`BotSecret.${this.bot}`];
+        var extractedSecret = null;
+        try {
+            extractedSecret = JSON.parse(process.env['SECRETS'])[this.bot];
+        }
+        catch {
+            throw new Error("Invalid format of bot secrets JSON");
+        }
+        return extractedSecret;
     }
 
     static async fromRequest(request) {

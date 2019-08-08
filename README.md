@@ -26,9 +26,11 @@ It can be easily deployed to Azure as an App Service:
 
 The service communicates with a bot, therefore it needs to know the bot's [Web Chat](https://docs.microsoft.com/en-us/azure/bot-service/bot-service-channel-connect-webchat?view=azure-bot-service-4.0) [secret key](https://docs.microsoft.com/en-us/azure/bot-service/bot-service-channel-connect-webchat?view=azure-bot-service-4.0#step-1).
 
-The service may communicate with multiple bots, so each bot should be identified by a logical name. For each bot the service would test, there needs to be an environment variable of the form `BotSecret.bot-logical-name`, which is set to the bot's Web Chat secret.
+The service may communicate with multiple bots, so each bot should be identified by a logical name. All bots' secrets need to be defined in a single environment variable named `SECRETS`, which should include a string representing a JSON object. In this JSON object, each key (bot's name) is mapped to a value (bot's secret).
 
-For example, let's assume we give the logical name '_samplebot_' to the bot we would like to test. Then we should have an environment variable called `BotSecret.samplebot` set to the bot's Web Chat secret.
+For example, let's assume we give the logical name '_samplebot_' to the bot we would like to test, and that its Web Chat secret is '_123_'. Then we should have an environment variable named `SECRETS` set to the following string:
+
+{"samplebot" : "123"}
 
 In case you would like to test a single bot most of the time, you can define an environment variable called `DefaultBot` to specify the logical name of your default bot.
 
