@@ -1,3 +1,5 @@
+var _ = require("underscore");
+
 var HTTP = require("./http");
 
 var Transcript = require("./transcript");
@@ -35,6 +37,10 @@ class TestData {
         return extractedSecret;
     }
 
+    static inheritedProperties() {
+        return ["version", "timeout", "bot", "userId"];
+    }
+
     static async fromRequest(request) {
         var testData = null;
         switch (request.method) {
@@ -43,6 +49,7 @@ class TestData {
                 break;
             case "POST":
                 testData = new TestData(request.body, request.query);
+                break;
         }
         return testData;
     }
@@ -56,6 +63,19 @@ class TestData {
         else {
             throw new Error("A 'url' parameter should be included on the query string.");
         }
+    }
+
+    static async fromObject(obj, defaults) {
+        var testData = null;
+        if (obj.hasOwnProperty("url") && obj.url) {
+            var response = await HTTP.getJSON(obj.url);
+            testData = new TestData(response, obj);
+        }
+        else {
+            testData = new TestData(obj, {});
+        }
+        testData = _.extend(_.pick(defaults, this.inheritedProperties()), testData);
+        return testData;
     }
 
 }
