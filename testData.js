@@ -9,7 +9,7 @@ var config = require("./config.json");
 class TestData {
 
     constructor(obj, query) {
-        this.name = (query && query.name) || (obj && obj.name);
+        this.name = (query && query.name) || (obj && obj.name) || (query && query.url.split('/').pop());
         this.version = (query && query.version) || (obj && obj.version);
         this.timeout = (query && query.timeout) || (obj && obj.timeout) || config.defaults.timeoutMilliseconds;
         this.bot = (query && query.bot) || (obj && obj.bot) || process.env["DefaultBot"];
@@ -74,7 +74,9 @@ class TestData {
         else {
             testData = new TestData(obj, {});
         }
+        var testDataProto = Object.getPrototypeOf(testData);
         testData = _.extend(_.pick(defaults, this.inheritedProperties()), testData);
+        Object.setPrototypeOf(testData, testDataProto);
         return testData;
     }
 
