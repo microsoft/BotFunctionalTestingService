@@ -1,5 +1,4 @@
 var _ = require("underscore");
-var async = require("async");
 var applicationinsights = require("applicationinsights");
 
 var telemetry = process.env["ApplicationInsightsInstrumentationKey"] ? new applicationinsights.TelemetryClient(process.env["ApplicationInsightsInstrumentationKey"]) : null;
@@ -42,8 +41,13 @@ class Suite {
                 context.failure(500, messages);
             }
         };
-
-        async.forEachOf(suiteData.testData, runTest, end);
+        try {
+            await utils.delayedForEachOf(suiteData.testData, runTest);
+        }
+        catch {
+            throw new Error("Error occurred while executing a test");
+        }
+        end();
     }
 }
 
