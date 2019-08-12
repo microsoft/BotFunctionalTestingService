@@ -30,7 +30,7 @@ The service may communicate with multiple bots, so each bot should be identified
 
 For example, let's assume we give the logical name '_samplebot_' to the bot we would like to test, and that its Web Chat secret is '_123_'. Then we should have an environment variable named `SECRETS` set to the following string:
 
-{"smaplebot" : "123"}
+{"samplebot" : "123"}
 
 In case you would like to test a single bot most of the time, you can define an environment variable called `DefaultBot` to specify the logical name of your default bot.
 

@@ -1,7 +1,9 @@
+
 var Context = require("./context.js");
 var TestData = require("./testData.js");
 var Test = require("./test");
-//check build configuration.
+var SuiteData = require("./suiteData.js");
+var Suite = require("./suite");
 
 var restify = require("restify");
 
@@ -16,6 +18,8 @@ server.use(restify.plugins.bodyParser());
 
 server.get("/test", handleRunTest);
 server.post("/test", handleRunTest);
+server.get("/suite", handleRunSuite);
+server.post("/suite", handleRunSuite);
 
 server.listen(process.env.PORT || 3000, function () {
     console.log("%s listening at %s", server.name, server.url);
