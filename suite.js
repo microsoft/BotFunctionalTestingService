@@ -24,8 +24,6 @@ class Suite {
             catch (err) {
                 results[index] = new Result(false, err.message, 400);
             }
-            // Whether the test failed or succeeded, we just store the result and invoke the callback with no error
-            callback();
         };
 
         var end = function(err) {
