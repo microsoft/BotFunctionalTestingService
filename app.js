@@ -37,3 +37,16 @@ async function handleRunTest(request, response, next) {
         context.failure(400, err.message);
     }
 }
+
+async function handleRunSuite(request, response, next) {
+    var context = new Context(request, response);
+    context.log(`${server.name} processing a suite ${request.method} request.`);
+
+    try {
+        var suiteData = await SuiteData.fromRequest(request);
+        Suite.run(context, suiteData);
+    }
+    catch (err) {
+        context.failure(400, err.message);
+    }
+}
