@@ -1,5 +1,4 @@
 var _ = require("underscore");
-var async = require("async");
 
 var HTTP = require("./http");
 var TestData = require("./testData");
