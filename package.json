@@ -21,6 +21,7 @@
     "request": "^2.83.0",
     "request-promise": "^4.2.2",
     "restify": "^6.3.4",
-    "underscore": "^1.8.3"
+    "underscore": "^1.8.3",
+    "ip": "^1.1.5"
   }
 }

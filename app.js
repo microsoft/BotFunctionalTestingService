@@ -7,6 +7,7 @@ var Suite = require("./suite");
 var ResultsManager = require("./resultsManager");
 
 var restify = require("restify");
+var ip = require('ip');
 
 const deletionTimeConst = 3600;
 
@@ -51,7 +52,7 @@ async function handleRunSuite(request, response, next) {
         var runId = resultsManager.getFreshRunId();
         // Now send a response with status code 202 and location header based on runId, and start the tests.
         response.setHeader("content-type", "application/json");
-        response.setHeader("Location", "/getResults/" + runId);
+        response.setHeader("Location", ip.address() + "/getResults/" + runId);
         response.send(202, "Tests are running.");
         var suiteData = await SuiteData.fromRequest(request); // SuiteData is a 2d-array. Each entry represents a batch. each sub-entry includes a test.
         Suite.run(context, suiteData, runId);
