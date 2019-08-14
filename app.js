@@ -45,6 +45,7 @@ async function handleRunTest(request, response, next) {
 
 async function handleRunSuite(request, response, next) {
     console.log(process.env);
+    return;
     var context = new Context(request, response);
     context.log(`${server.name} processing a suite ${request.method} request.`);
 
