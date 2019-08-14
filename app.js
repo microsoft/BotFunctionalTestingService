@@ -51,7 +51,7 @@ async function handleRunSuite(request, response, next) {
         var runId = resultsManager.getFreshRunId();
         // Now send a response with status code 202 and location header based on runId, and start the tests.
         response.setHeader("content-type", "application/json");
-        response.setHeader("location", "/getResults/" + runId);
+        response.setHeader("Location", "/getResults/" + runId);
         response.send(202, "Tests are running.");
         var suiteData = await SuiteData.fromRequest(request); // SuiteData is a 2d-array. Each entry represents a batch. each sub-entry includes a test.
         Suite.run(context, suiteData, runId);
@@ -70,7 +70,8 @@ async function handleGetTestResults(request, response, next) {
     var results = resultsManager.getTestResults(runId);
     if (!results) { // If results are not ready
         response.setHeader("content-type", "application/json");
-        response.setHeader("location", "/getResults/" + runId);
+        response.setHeader("Location", "/getResults/" + runId);
+        response.setHeader("Retry-After", 10);
         response.send(202, "Tests are still running.");
     }
     else { // Results are ready
