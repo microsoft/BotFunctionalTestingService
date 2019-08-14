@@ -7,9 +7,10 @@ var utils = require("./utils");
 
 var Test = require("./test");
 var Result = require("./result");
+var ResultsManager = require("./resultsManager");
 
 class Suite {
-    static async run(context, suiteData) {
+    static async run(context, suiteData, runId) {
         context.log("Suite.run started");
         context.log("suiteData: " + utils.stringify(suiteData));
 
@@ -30,17 +31,18 @@ class Suite {
         var end = function(err) {
             var success = _.every(results, (result) => result && result.success);
             var messages = _.pluck(results, "message");
+            var resultsManager = ResultsManager.getResultsManager();
             if (success) {
                 if (telemetry) {
                     telemetry.trackEvent({name: "TestSuiteSucceeded", properties: {suite: suiteData.name, details: messages}});
                 }
-                context.success(messages);
+                resultsManager.updateTestResults(runId, messages, "success");
             }
             else {
                 if (telemetry) {
                     telemetry.trackEvent({name: "TestSuiteFailed", properties: {suite: suiteData.name, details: messages}});
                 }
-                context.failure(500, messages);
+                resultsManager.updateTestResults(runId, messages, "failure");
             }
         };
         try {
