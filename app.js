@@ -43,7 +43,7 @@ async function handleRunSuite(request, response, next) {
     context.log(`${server.name} processing a suite ${request.method} request.`);
 
     try {
-        var suiteData = await SuiteData.fromRequest(request);
+        var suiteData = await SuiteData.fromRequest(request); // SuiteData is a 2d-array. Each entry represents a batch. each sub-entry includes a test.
         Suite.run(context, suiteData);
     }
     catch (err) {
