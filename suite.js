@@ -36,13 +36,13 @@ class Suite {
                 if (telemetry) {
                     telemetry.trackEvent({name: "TestSuiteSucceeded", properties: {suite: suiteData.name, details: messages}});
                 }
-                resultsManager.updateTestResults(runId, messages, "success");
+                resultsManager.updateSuiteResults(runId, messages, "success");
             }
             else {
                 if (telemetry) {
                     telemetry.trackEvent({name: "TestSuiteFailed", properties: {suite: suiteData.name, details: messages}});
                 }
-                resultsManager.updateTestResults(runId, messages, "failure");
+                resultsManager.updateSuiteResults(runId, messages, "failure");
             }
         };
         try {

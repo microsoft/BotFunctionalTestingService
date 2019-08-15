@@ -5,7 +5,7 @@ class ResultsManager {
         if (ResultsManager.singleton) {
             return ResultsManager.singleton;
         }
-        this.activeRunIds = new Set();
+        this.activeRunIds = new Set(); // runId is an identifier for a suite run.
         this.runIdToResults = {}; // runId --> [arrayOfResults, verdict]
         ResultsManager.singleton = this;
         return ResultsManager.singleton;
@@ -31,18 +31,17 @@ class ResultsManager {
         }
         this.activeRunIds.add(res);
         return res;
-
     }
 
     /**
-     * Updates the results of a test, given test id (runId), array of test results and a verdict ("success", "failure").
+     * Updates the results of a suite, given test id (runId), array of test results and a verdict ("success", "failure").
      * @param runId
      * @param testResults
      * @param verdict
      * @return void
      *
      */
-    updateTestResults (runId, testResults, verdict) {
+    updateSuiteResults (runId, testResults, verdict) {
         if (this.activeRunIds.has(runId)) {
             this.runIdToResults[runId] = new Array(2);
             this.runIdToResults[runId][0] = testResults;
@@ -51,11 +50,11 @@ class ResultsManager {
     }
 
     /**
-     * Deletes results of a given runId from this.runIds and from this.runIdToResults.
+     * Deletes results of a suite given runId from this.runIds and from this.runIdToResults.
      * @param runId
      * @return void
      */
-    deleteTestResult(runId) {
+    deleteSuiteResult(runId) {
         if (this.activeRunIds.has(runId)) {
             this.activeRunIds.delete(runId);
             delete this.runIdToResults[runId];
@@ -67,7 +66,7 @@ class ResultsManager {
      * @param runId
      * @return The array representing the tests results of the given runId. If test results is not ready, null is returned.
      */
-    getTestResults(runId) {
+    getSuiteResults(runId) {
         if (this.runIdToResults.hasOwnProperty(runId)) { // If test results are ready
             return this.runIdToResults[runId]; // Return them.
         }

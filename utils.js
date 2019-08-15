@@ -10,7 +10,7 @@ Utils.prototype.stringify = function(obj, space) {
 }
 
 /**
- * Calls @func on each element of @array, each call is delayed by i X @sec seconds, where i is the index of the element
+ * Calls @func on each element of @array, each call is delayed by i * @sec seconds, where i is the index of the element
  * in the array (i.e each call will happen @sec seconds after the previous call).
  * @param array
  * @param func

@@ -53,21 +53,21 @@ async function handleRunSuite(request, response, next) {
         response.setHeader("content-type", "application/json");
         response.setHeader("Location", "http://" + request.headers.host + "/getResults/" + runId);
         response.send(202, "Tests are running.");
-        var suiteData = await SuiteData.fromRequest(request); // SuiteData is a 2d-array. Each entry represents a batch. each sub-entry includes a test.
+        var suiteData = await SuiteData.fromRequest(request); // SuiteData is a 2d-array. Each entry represents a batch. Each sub-entry includes a test.
         Suite.run(context, suiteData, runId);
-        setTimeout(() => {resultsManager.deleteTestResult(runId)}, deletionTimeConst*1000);
+        setTimeout(() => {resultsManager.deleteSuiteResult(runId)}, deletionTimeConst*1000);
     }
     catch (err) {
         response.setHeader("content-type", "application/json");
         response.send(400, err.message);
-        setTimeout(() => {resultsManager.deleteTestResult(runId)}, deletionTimeConst*1000);
+        setTimeout(() => {resultsManager.deleteSuiteResult(runId)}, deletionTimeConst*1000);
     }
 }
 
 async function handleGetTestResults(request, response, next) {
     var runId = request.params.runId;
     var resultsManager = ResultsManager.getResultsManager();
-    var results = resultsManager.getTestResults(runId);
+    var results = resultsManager.getSuiteResults(runId);
     if (!results) { // If results are not ready
         response.setHeader("content-type", "application/json");
         response.setHeader("Location", "http://" + request.headers.host + "/getResults/" + runId);
