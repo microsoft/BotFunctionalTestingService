@@ -70,7 +70,7 @@ async function handleGetTestResults(request, response, next) {
     var results = resultsManager.getTestResults(runId);
     if (!results) { // If results are not ready
         response.setHeader("content-type", "application/json");
-        response.setHeader("Location", "/getResults/" + runId);
+        response.setHeader("Location", "http://" + request.headers.host + "/getResults/" + runId);
         response.setHeader("Retry-After", 10);
         response.send(202, "Tests are still running.");
     }
