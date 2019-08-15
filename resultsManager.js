@@ -26,7 +26,7 @@ class ResultsManager {
      */
     getFreshRunId() {
         var res = crypto.randomBytes(8).toString('hex');
-        while (this.activeRunIds.has(res)) {
+        while (this.activeRunIds.has(res)) { // Ensures that the runId is currently unique.
             res = crypto.randomBytes(8).toString('hex');
         }
         this.activeRunIds.add(res);
@@ -38,7 +38,7 @@ class ResultsManager {
      * Updates the results of a test, given test id (runId), array of test results and a verdict ("success", "failure").
      * @param runId
      * @param testResults
-     * @verdict
+     * @param verdict
      * @return void
      *
      */

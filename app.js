@@ -8,7 +8,7 @@ var ResultsManager = require("./resultsManager");
 
 var restify = require("restify");
 
-const deletionTimeConst = 3600;
+const deletionTimeConst = 3600; // 3600 seconds == 1 hour.
 
 const server = restify.createServer({
     name: "BotFunctionalTestingService",
