@@ -21,6 +21,20 @@ function removeSchemaAttribute(currEntry) {
     }
 }
 
+// Handler 2
+function addSeparationAttribute(currEntry) {
+    if (currEntry['type'] === 'message') {
+        if (currEntry.hasOwnProperty("attachments") && currEntry["attachments"][0].hasOwnProperty("content") && currEntry["attachments"][0]["content"].hasOwnProperty("body") && currEntry["attachments"][0]["content"]["body"][0].hasOwnProperty("items")) {
+            for (var item of currEntry["attachments"][0]["content"]["body"][0]["items"]) {
+                if (item.hasOwnProperty("spacing") && item.hasOwnProperty("isSubtle")) {
+                    item["separation"] = "strong";
+                }
+            }
+        }
+
+    }
+}
+
 /** This is the main function - It iterates over all entries of the transcript, and applies all handlers on each entry **/
 function main(path) {
     let contentBuffer;
@@ -36,6 +50,7 @@ function main(path) {
         let currEntry = jsonTranscript[i];
         // Here we call to all the handlers we defined
         removeSchemaAttribute(currEntry);
+        addSeparationAttribute(currEntry);
     }
     try{
         const filename = path.replace(/^.*[\\\/]/, '').replace(/\.[^/.]+$/, ''); // Extracts filename without extension from full path.
