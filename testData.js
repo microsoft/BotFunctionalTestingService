@@ -1,3 +1,5 @@
+var _ = require("underscore");
+
 var HTTP = require("./http");
 
 var Transcript = require("./transcript");
@@ -7,7 +9,7 @@ var config = require("./config.json");
 class TestData {
 
     constructor(obj, query) {
-        this.name = (query && query.name) || (obj && obj.name);
+        this.name = (query && query.name) || (obj && obj.name) || (query && query.url.split('/').pop());
         this.version = (query && query.version) || (obj && obj.version);
         this.timeout = (query && query.timeout) || (obj && obj.timeout) || config.defaults.timeoutMilliseconds;
         this.bot = (query && query.bot) || (obj && obj.bot) || process.env["DefaultBot"];
@@ -35,6 +37,10 @@ class TestData {
         return extractedSecret;
     }
 
+    static inheritedProperties() {
+        return ["version", "timeout", "bot", "userId"];
+    }
+
     static async fromRequest(request) {
         var testData = null;
         switch (request.method) {
@@ -43,6 +49,7 @@ class TestData {
                 break;
             case "POST":
                 testData = new TestData(request.body, request.query);
+                break;
         }
         return testData;
     }
@@ -56,6 +63,21 @@ class TestData {
         else {
             throw new Error("A 'url' parameter should be included on the query string.");
         }
+    }
+
+    static async fromObject(obj, defaults) {
+        var testData = null;
+        if (obj.hasOwnProperty("url") && obj.url) {
+            var response = await HTTP.getJSON(obj.url);
+            testData = new TestData(response, obj);
+        }
+        else {
+            testData = new TestData(obj, {});
+        }
+        var testDataProto = Object.getPrototypeOf(testData);
+        testData = _.extend(_.pick(defaults, this.inheritedProperties()), testData);
+        Object.setPrototypeOf(testData, testDataProto);
+        return testData;
     }
 
 }
