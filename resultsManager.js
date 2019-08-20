@@ -77,4 +77,4 @@ function getSuiteResults(runId) {
     }
 }
 
-module.exports = {init, getActiveRunIds, getFreshRunId, updateSuiteResults, deleteSuiteResult, getSuiteResults}
+module.exports = {init, getActiveRunIds, getFreshRunId, updateSuiteResults, deleteSuiteResult, getSuiteResults};
