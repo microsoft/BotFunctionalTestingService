@@ -1,4 +1,3 @@
-
 var Context = require("./context.js");
 var TestData = require("./testData.js");
 var Test = require("./test");
@@ -27,6 +26,7 @@ server.get("/getResults/:runId", handleGetTestResults);
 
 server.listen(process.env.PORT || 3000, function () {
     console.log("%s listening at %s", server.name, server.url);
+    ResultsManager.init();
 });
 
 async function handleRunTest(request, response, next) {
@@ -45,35 +45,33 @@ async function handleRunTest(request, response, next) {
 async function handleRunSuite(request, response, next) {
     var context = new Context(request, response);
     context.log(`${server.name} processing a suite ${request.method} request.`);
-
     try {
-        var resultsManager = ResultsManager.getResultsManager();
-        var runId = resultsManager.getFreshRunId();
+        var runId = ResultsManager.getFreshRunId();
         // Now send a response with status code 202 and location header based on runId, and start the tests.
         response.setHeader("content-type", "application/json");
         response.setHeader("Location", "http://" + request.headers.host + "/getResults/" + runId);
         response.send(202, "Tests are running.");
         var suiteData = await SuiteData.fromRequest(request); // SuiteData is a 2d-array. Each entry represents a batch. Each sub-entry includes a test.
         await Suite.run(context, suiteData, runId);
-        setTimeout(() => {resultsManager.deleteSuiteResult(runId)}, deletionTimeConst*1000); // Delete suite results data after a constant time after tests end..
+        setTimeout(() => {ResultsManager.deleteSuiteResult(runId)}, deletionTimeConst*1000); // Delete suite results data after a constant time after tests end..
     }
     catch (err) {
         response.setHeader("content-type", "application/json");
         response.send(400, err.message);
-        setTimeout(() => {resultsManager.deleteSuiteResult(runId)}, deletionTimeConst*1000);
+        setTimeout(() => {ResultsManager.deleteSuiteResult(runId)}, deletionTimeConst*1000);
     }
 }
 
 async function handleGetTestResults(request, response, next) {
     var runId = request.params.runId;
-    var resultsManager = ResultsManager.getResultsManager();
-    if (!resultsManager.activeRunIds.has(runId)) {
+    var activeRunIds = ResultsManager.getActiveRunIds();
+    if (!activeRunIds.has(runId)) {
         response.setHeader("content-type", "application/json");
         response.send(400, "RunId does not exist.");
         return;
     }
     // Else, runId exists.
-    var results = resultsManager.getSuiteResults(runId);
+    var results = ResultsManager.getSuiteResults(runId);
     if (!results) { // If results are not ready
         response.setHeader("content-type", "application/json");
         response.setHeader("Location", "http://" + request.headers.host + "/getResults/" + runId);
@@ -90,5 +88,4 @@ async function handleGetTestResults(request, response, next) {
         }
 
     }
-
 }
