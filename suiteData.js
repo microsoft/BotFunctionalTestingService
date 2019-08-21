@@ -22,7 +22,7 @@ class SuiteData {
         this.defaults = _.pick(_.extend(obj, query), TestData.inheritedProperties());
     }
     async init() {
-        this.testData = await createTestData(this.tests, this.defaults); // This var holds all the tests data as array
+        this.testData = await createTestData(this.tests, this.defaults);
     }
 
     static async fromRequest(request) {
