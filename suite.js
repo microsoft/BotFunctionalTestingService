@@ -64,7 +64,7 @@ class Suite {
                 }, i * 1000)
             });
             testPromises.push(promise);
-            if ((i+1)%batchSize == 0) { // If end of batch is reached
+            if ((i+1)%batchSize === 0) { // If end of batch is reached
                 try {
                     await Promise.all(testPromises); // Wait for batch run to end
                 }
