@@ -2,9 +2,7 @@ var _ = require("underscore");
 
 var HTTP = require("./http");
 var TestData = require("./testData");
-var Utils = require("./utils");
 
-const defaultBatchSize = 3;
 
 class SuiteData {
     
@@ -24,10 +22,8 @@ class SuiteData {
         this.defaults = _.pick(_.extend(obj, query), TestData.inheritedProperties());
     }
     async init() {
-        var testDataArray = await createTestData(this.tests, this.defaults); // This var holds all the tests data as array
-        // We will divide the tests into batches. Batch size is determined by env var "BatchSize" (default 3).
-        var batchSize = parseInt(process.env["BatchSize"]) ? parseInt(process.env["BatchSize"]) : defaultBatchSize;
-        this.testData = Utils.divideIntoBatches(testDataArray, batchSize);
+        const testDataArray = await createTestData(this.tests, this.defaults); // This var holds all the tests data as array
+        this.testData = testDataArray;
     }
 
     static async fromRequest(request) {
