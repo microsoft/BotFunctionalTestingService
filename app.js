@@ -51,7 +51,7 @@ async function handleRunSuite(request, response, next) {
     }
     catch {
         response.setHeader("content-type", "application/json");
-        response.send(400, "Could not get tests data from request");
+        response.send(400, {results: ["Could not get tests data from request"], verdict:"error"});
         ResultsManager.deleteSuiteResult(runId);
         context.log("Could not get tests data from request for runId " + runId);
         return;
@@ -69,7 +69,7 @@ async function handleRunSuite(request, response, next) {
             }, config.defaults.testSuiteResultsRetentionTime*1000); // Delete suite results data after a constant time after tests end.
     }
     catch (err) {
-        ResultsManager.updateSuiteResults(runId, "Error while running test suite: " + err, "error");
+        ResultsManager.updateSuiteResults(runId, ["Error while running test suite"], "error");
         context.log("Error while running test suite with runId " + runId);
     }
 }
