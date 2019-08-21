@@ -4,10 +4,9 @@ var Test = require("./test");
 var SuiteData = require("./suiteData.js");
 var Suite = require("./suite");
 var ResultsManager = require("./resultsManager");
+var config = require("./config.json");
 
 var restify = require("restify");
-
-const deletionTimeConst = 3600; // 3600 seconds == 1 hour.
 
 const server = restify.createServer({
     name: "BotFunctionalTestingService",
@@ -26,15 +25,14 @@ server.get("/getResults/:runId", handleGetTestResults);
 
 server.listen(process.env.PORT || 3000, function () {
     console.log("%s listening at %s", server.name, server.url);
-    ResultsManager.init();
 });
 
 async function handleRunTest(request, response, next) {
-    var context = new Context(request, response);
+    const context = new Context(request, response);
     context.log(`${server.name} processing a test ${request.method} request.`);
 
     try {
-        var testData = await TestData.fromRequest(request);
+        const testData = await TestData.fromRequest(request);
         Test.run(context, testData);
     }
     catch (err) {
@@ -43,36 +41,50 @@ async function handleRunTest(request, response, next) {
 }
 
 async function handleRunSuite(request, response, next) {
-    var context = new Context(request, response);
+    const context = new Context(request, response);
     context.log(`${server.name} processing a suite ${request.method} request.`);
+    const runId = ResultsManager.getFreshRunId();
+    // Get the suite data from the request.
     try {
-        var runId = ResultsManager.getFreshRunId();
-        // Now send a response with status code 202 and location header based on runId, and start the tests.
-        response.setHeader("content-type", "application/json");
-        response.setHeader("Location", "http://" + request.headers.host + "/getResults/" + runId);
-        response.send(202, "Tests are running.");
         var suiteData = await SuiteData.fromRequest(request); // SuiteData is a 2d-array. Each entry represents a batch. Each sub-entry includes a test.
-        await Suite.run(context, suiteData, runId);
-        setTimeout(() => {ResultsManager.deleteSuiteResult(runId)}, deletionTimeConst*1000); // Delete suite results data after a constant time after tests end..
+        context.log("Successfully got all tests from the request for runId" + runId);
+    }
+    catch {
+        response.setHeader("content-type", "application/json");
+        response.send(400, "Could not get tests data from request");
+        ResultsManager.deleteSuiteResult(runId);
+        context.log("Could not get tests data from request for runId" + runId);
+        return;
+    }
+    // Send a response with status code 202 and location header based on runId, and start the tests.
+    response.setHeader("content-type", "application/json");
+    response.setHeader("Location", "http://" + request.headers.host + "/getResults/" + runId);
+    response.send(202, "Tests are running.");
+    let testSuite = new Suite(context, runId, suiteData);
+    try {
+        await testSuite.run();
+        setTimeout(() => {
+            ResultsManager.deleteSuiteResult(runId);
+            context.log("Deleted suite results for runId " + runId);
+            }, config.defaults.testSuiteResultsRetentionTime*1000); // Delete suite results data after a constant time after tests end.
     }
     catch (err) {
-        response.setHeader("content-type", "application/json");
-        response.send(400, err.message);
-        setTimeout(() => {ResultsManager.deleteSuiteResult(runId)}, deletionTimeConst*1000);
+        ResultsManager.updateSuiteResults(runId, "Error while running test suite: " + err, "error");
+        context.log("Error while running test suite with runId " + runId);
     }
 }
 
 async function handleGetTestResults(request, response, next) {
-    var runId = request.params.runId;
-    var activeRunIds = ResultsManager.getActiveRunIds();
-    if (!activeRunIds.has(runId)) {
+    const runId = request.params.runId;
+    const activeRunIds = ResultsManager.getActiveRunIds();
+    if (!activeRunIds.has(runId)) { // If runId doesn't exist (either deleted or never existed)
         response.setHeader("content-type", "application/json");
-        response.send(400, "RunId does not exist.");
+        response.send(404, "RunId does not exist.");
         return;
     }
     // Else, runId exists.
-    var results = ResultsManager.getSuiteResults(runId);
-    if (!results) { // If results are not ready
+    const resultsObject = ResultsManager.getSuiteResults(runId);
+    if (!resultsObject) { // If results are not ready
         response.setHeader("content-type", "application/json");
         response.setHeader("Location", "http://" + request.headers.host + "/getResults/" + runId);
         response.setHeader("Retry-After", 10);
@@ -80,12 +92,12 @@ async function handleGetTestResults(request, response, next) {
     }
     else { // Results are ready
         response.setHeader("content-type", "application/json");
-        if (results[1] === "success") {
-            response.send(200, results[0]);
+        if (resultsObject["verdict"] === "success" || resultsObject["verdict"] === "failure") { // If tests finished without errors, send response with status code 200.
+            response.send(200, resultsObject);
         }
-        else if (results[1] === "failure") {
-            response.send(500, results[0]);
+        else if (resultsObject["verdict"] === "error") { // If there was an error while running the tests, send response with status code 500
+            response.send(500, resultsObject);
+            ResultsManager.deleteSuiteResult(runId); // In case of an error while running test suite, delete suite results once user knows about it.
         }
-
     }
 }

@@ -1,25 +1,14 @@
 const crypto = require('crypto');
 
-let resultsManagerInstance;
-
-/**
- * Initializes the results manager if it wasn't initialized before.
- * @return void
- */
-function init() {
-    if (!resultsManagerInstance) {
-        resultsManagerInstance = {};
-        resultsManagerInstance.activeRunIds = new Set(); // runId is an identifier for a suite run.
-        resultsManagerInstance.runIdToResults = {}; // runId --> [arrayOfResults, verdict]
-    }
-}
+let activeRunIds = new Set(); // runId is an identifier for a suite run.
+let runIdToResults = {}; // runId --> [arrayOfResults, verdict]
 
 /**
  * Returns the set of activeRunIds
  * @return activeRunIds
  */
 function getActiveRunIds() {
-    return resultsManagerInstance["activeRunIds"];
+    return activeRunIds;
 }
 
 /**
@@ -28,10 +17,10 @@ function getActiveRunIds() {
 */
 function getFreshRunId() {
     var res = crypto.randomBytes(8).toString('hex');
-    while (resultsManagerInstance.activeRunIds.has(res)) { // Ensures that the runId is currently unique.
+    while (activeRunIds.has(res)) { // Ensures that the runId is currently unique.
         res = crypto.randomBytes(8).toString('hex');
     }
-    resultsManagerInstance.activeRunIds.add(res);
+    activeRunIds.add(res);
     return res;
 }
 
@@ -44,10 +33,10 @@ function getFreshRunId() {
 *
 */
 function updateSuiteResults (runId, testResults, verdict) {
-    if (resultsManagerInstance.activeRunIds.has(runId)) {
-        resultsManagerInstance.runIdToResults[runId] = new Array(2);
-        resultsManagerInstance.runIdToResults[runId][0] = testResults;
-        resultsManagerInstance.runIdToResults[runId][1] = verdict;
+    if (activeRunIds.has(runId)) {
+        runIdToResults[runId] = {}
+        runIdToResults[runId]["results"] = testResults;
+        runIdToResults[runId]["verdict"] = verdict;
     }
 }
 
@@ -57,9 +46,9 @@ function updateSuiteResults (runId, testResults, verdict) {
 * @return void
 */
 function deleteSuiteResult(runId) {
-    if (resultsManagerInstance.activeRunIds.has(runId)) {
-        resultsManagerInstance.activeRunIds.delete(runId);
-        delete resultsManagerInstance.runIdToResults[runId];
+    if (activeRunIds.has(runId)) {
+        activeRunIds.delete(runId);
+        delete runIdToResults[runId];
     }
 }
 
@@ -69,12 +58,13 @@ function deleteSuiteResult(runId) {
 * @return The array representing the tests results of the given runId. If test results is not ready, null is returned.
 */
 function getSuiteResults(runId) {
-    if (resultsManagerInstance.runIdToResults.hasOwnProperty(runId)) { // If test results are ready
-        return resultsManagerInstance.runIdToResults[runId]; // Return them.
+    if (runIdToResults.hasOwnProperty(runId)) { // If test results are ready
+        return runIdToResults[runId]; // Return them.
     }
     else {
         return null; // Else, null is returned.
     }
 }
 
-module.exports = {init, getActiveRunIds, getFreshRunId, updateSuiteResults, deleteSuiteResult, getSuiteResults};
+module.exports = {getActiveRunIds, getFreshRunId, updateSuiteResults, deleteSuiteResult, getSuiteResults};
+
