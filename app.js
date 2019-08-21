@@ -47,13 +47,13 @@ async function handleRunSuite(request, response, next) {
     // Get the suite data from the request.
     try {
         var suiteData = await SuiteData.fromRequest(request); // SuiteData is a 2d-array. Each entry represents a batch. Each sub-entry includes a test.
-        context.log("Successfully got all tests from the request for runId" + runId);
+        context.log("Successfully got all tests from the request for runId " + runId);
     }
     catch {
         response.setHeader("content-type", "application/json");
         response.send(400, "Could not get tests data from request");
         ResultsManager.deleteSuiteResult(runId);
-        context.log("Could not get tests data from request for runId" + runId);
+        context.log("Could not get tests data from request for runId " + runId);
         return;
     }
     // Send a response with status code 202 and location header based on runId, and start the tests.
