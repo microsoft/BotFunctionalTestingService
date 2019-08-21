@@ -20,7 +20,6 @@ class Suite {
 
      async runTest(testData) {
         try {
-            console.log("Guy: "+ new Date().getSeconds());
             const result = await Test.perform(this.context, testData);
             return result;
         }
@@ -62,10 +61,10 @@ class Suite {
                     } catch {
                         reject();
                     }
-                }, i * 1000)
+                }, i&batchSize * 1000)
             });
             testPromises.push(promise);
-            if ((i+1)%batchSize == 0) { // If end of batch is reached
+            if ((i+1)%batchSize === 0) { // If end of batch is reached
                 try {
                     await Promise.all(testPromises); // Wait for batch run to end
                 }

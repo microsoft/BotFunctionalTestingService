@@ -13,10 +13,10 @@ function getActiveRunIds() {
 
 /**
 * Returns a random RunId that is currently not in use. This function also updates the set of active run ids.
-* @return A fresh Id
+* @return string fresh Id
 */
 function getFreshRunId() {
-    var res = crypto.randomBytes(8).toString('hex');
+    let res = crypto.randomBytes(8).toString('hex');
     while (activeRunIds.has(res)) { // Ensures that the runId is currently unique.
         res = crypto.randomBytes(8).toString('hex');
     }
