@@ -61,7 +61,7 @@ class Suite {
                     } catch {
                         reject();
                     }
-                }, i&batchSize * 1000)
+                }, i%batchSize * 1000)
             });
             testPromises.push(promise);
             if ((i+1)%batchSize === 0) { // If end of batch is reached
