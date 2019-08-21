@@ -20,7 +20,6 @@ class Suite {
 
      async runTest(testData) {
         try {
-            console.log("Guy: "+ new Date().getSeconds());
             const result = await Test.perform(this.context, testData);
             return result;
         }
