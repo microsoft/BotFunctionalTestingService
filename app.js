@@ -46,7 +46,7 @@ async function handleRunSuite(request, response, next) {
     const runId = ResultsManager.getFreshRunId();
     // Get the suite data from the request.
     try {
-        var suiteData = await SuiteData.fromRequest(request); // SuiteData is a 2d-array. Each entry represents a batch. Each sub-entry includes a test.
+        var suiteData = await SuiteData.fromRequest(request);
         context.log("Successfully got all tests from the request for runId " + runId);
     }
     catch {
