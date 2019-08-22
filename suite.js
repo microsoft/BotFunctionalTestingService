@@ -4,7 +4,7 @@ var applicationinsights = require("applicationinsights");
 var telemetry = process.env["ApplicationInsightsInstrumentationKey"] ? new applicationinsights.TelemetryClient(process.env["ApplicationInsightsInstrumentationKey"]) : null;
 
 var utils = require("./utils");
-var util = require("util");
+const sleep = require("util").promisify(setTimeout);
 
 var Test = require("./test");
 var Result = require("./result");
@@ -52,23 +52,17 @@ class Suite {
         // We will divide the tests into batches. Batch size is determined by env var "BatchSize" (default 3).
         const batchSize = parseInt(process.env["BatchSize"]) ? parseInt(process.env["BatchSize"]) : config.defaults.defaultBatchSize;
         let testPromises = [];
-        const sleep = util.promisify(setTimeout);
-        for (let i=0; i<this.suiteData.testData.length; i++) {
-            const currTestData = this.suiteData.testData[i];
-            testPromises.push(this.runTest(currTestData));
-            if ((i+1)%batchSize === 0) { // If end of batch is reached
-                try {
+        try {
+            for (let i=0; i<this.suiteData.testData.length; i++) {
+                const currTestData = this.suiteData.testData[i];
+                testPromises.push(this.runTest(currTestData));
+                if ((i+1)%batchSize === 0) { // If end of batch is reached
                     await Promise.all(testPromises); // Wait for batch run to end
                 }
-                catch (err) {
-                    throw new Error("Error occurred while executing a test: " + err);
+                else { // Sleep for 1 second between tests of the same batch (and avoid sleeping between batches).
+                    await sleep(1000);
                 }
             }
-            else { // Sleep for 1 second between tests of the same batch (and avoid sleeping between batches).
-                await sleep(1000);
-            }
-        }
-        try {
             this.results = await Promise.all(testPromises); // Wait for last batch (can be smaller than batchSize).
         }
         catch (err) {
