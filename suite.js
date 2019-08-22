@@ -35,13 +35,13 @@ class Suite {
             if (telemetry) {
                 telemetry.trackEvent({name: "TestSuiteSucceeded", properties: {suite: this.suiteData.name, details: messages}});
             }
-            ResultsManager.updateSuiteResults(this.runId, messages, "success");
+            ResultsManager.updateSuiteResults(this.runId, messages, "", "success");
         }
         else {
             if (telemetry) {
                 telemetry.trackEvent({name: "TestSuiteFailed", properties: {suite: this.suiteData.name, details: messages}});
             }
-            ResultsManager.updateSuiteResults(this.runId, messages, "failure");
+            ResultsManager.updateSuiteResults(this.runId, messages, "", "failure");
         }
     }
 
@@ -69,7 +69,7 @@ class Suite {
                     await Promise.all(testPromises); // Wait for batch run to end
                 }
                 catch (err) {
-                    throw new Error("Error occurred while executing a test:" + err);
+                    throw new Error("Error occurred while executing a test: " + err);
                 }
             }
         }
