@@ -4,6 +4,7 @@ var applicationinsights = require("applicationinsights");
 var telemetry = process.env["ApplicationInsightsInstrumentationKey"] ? new applicationinsights.TelemetryClient(process.env["ApplicationInsightsInstrumentationKey"]) : null;
 
 var utils = require("./utils");
+var util = require("util");
 
 var Test = require("./test");
 var Result = require("./result");
@@ -51,19 +52,10 @@ class Suite {
         // We will divide the tests into batches. Batch size is determined by env var "BatchSize" (default 3).
         const batchSize = parseInt(process.env["BatchSize"]) ? parseInt(process.env["BatchSize"]) : config.defaults.defaultBatchSize;
         let testPromises = [];
+        const sleep = util.promisify(setTimeout);
         for (let i=0; i<this.suiteData.testData.length; i++) {
             const currTestData = this.suiteData.testData[i];
-            const promise = new Promise((resolve, reject) => {
-                setTimeout(async () => {
-                    try {
-                        const testRes = await this.runTest(currTestData);
-                        resolve(testRes);
-                    } catch {
-                        reject();
-                    }
-                }, i%batchSize * 1000)
-            });
-            testPromises.push(promise);
+            testPromises.push(this.runTest(currTestData));
             if ((i+1)%batchSize === 0) { // If end of batch is reached
                 try {
                     await Promise.all(testPromises); // Wait for batch run to end
@@ -71,6 +63,9 @@ class Suite {
                 catch (err) {
                     throw new Error("Error occurred while executing a test: " + err);
                 }
+            }
+            else { // Sleep for 1 second between tests of the same batch (and avoid sleeping between batches).
+                await sleep(1000);
             }
         }
         try {
