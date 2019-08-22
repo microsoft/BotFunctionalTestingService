@@ -16,7 +16,6 @@
   "license": "MIT",
   "dependencies": {
     "applicationinsights": "^1.0.3",
-    "async": "^2.6.1",
     "chai": "^4.1.2",
     "deep-object-diff": "^1.0.4",
     "request": "^2.83.0",

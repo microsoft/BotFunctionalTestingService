@@ -12,7 +12,7 @@ class Context {
 
     done() {
         this.response.setHeader("content-type", this.res.contentType);
-        this.response.send(this.res.status, this.res.reason)
+        this.response.send(this.res.status, this.res.reason);
     }
 
     success(message) {
