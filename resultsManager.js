@@ -28,14 +28,16 @@ function getFreshRunId() {
 * Updates the results of a suite, given test id (runId), array of test results and a verdict ("success", "failure").
 * @param runId
 * @param testResults
+* @param errorMessage
 * @param verdict
 * @return void
 *
 */
-function updateSuiteResults (runId, testResults, verdict) {
+function updateSuiteResults (runId, testResults, errorMessage, verdict) {
     if (activeRunIds.has(runId)) {
-        runIdToResults[runId] = {}
+        runIdToResults[runId] = {};
         runIdToResults[runId]["results"] = testResults;
+        runIdToResults[runId]["errorMessage"] = errorMessage;
         runIdToResults[runId]["verdict"] = verdict;
     }
 }

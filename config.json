@@ -1,7 +1,7 @@
 {
     "defaults": {
         "timeoutMilliseconds": 5000,
-        "testSuiteResultsRetentionTime": 3600,
+        "testSuiteResultsRetentionSeconds": 3600,
         "defaultBatchSize": 3
     }
 }
