@@ -28,7 +28,6 @@ server.get("/getResults/:runId", handleGetTestResults);
 
 server.listen(process.env.PORT || 3000, function () {
     if (telemetryClient) {
-        applicationinsights.setup(process.env["ApplicationInsightsInstrumentationKey"]).start();
         telemetryClient.context.tags["ai.cloud.role"] = config.defaults.roleName;
         telemetryClient.trackTrace({message: "Started listening"});
     }
