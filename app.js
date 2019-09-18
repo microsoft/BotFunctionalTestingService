@@ -8,6 +8,9 @@ var config = require("./config.json");
 
 var restify = require("restify");
 
+const applicationinsights = require("applicationinsights");
+const telemetryClient = process.env["ApplicationInsightsInstrumentationKey"] ? new applicationinsights.TelemetryClient(process.env["ApplicationInsightsInstrumentationKey"]) : null;
+
 const server = restify.createServer({
     name: "BotFunctionalTestingService",
     version: "1.0.0"
@@ -24,6 +27,11 @@ server.post("/suite", handleRunSuite);
 server.get("/getResults/:runId", handleGetTestResults);
 
 server.listen(process.env.PORT || 3000, function () {
+    if (telemetryClient) {
+        applicationinsights.setup(process.env["ApplicationInsightsInstrumentationKey"]).start();
+        telemetryClient.context.tags["ai.cloud.role"] = config.defaults.roleName;
+        telemetryClient.trackTrace({message: "Started listening"});
+    }
     console.log("%s listening at %s", server.name, server.url);
 });
 
@@ -43,6 +51,9 @@ async function handleRunTest(request, response, next) {
 async function handleRunSuite(request, response, next) {
     const context = new Context(request, response);
     context.log(`${server.name} processing a suite ${request.method} request.`);
+    if (telemetryClient) {
+        telemetryClient.trackTrace({message: "Started suite run"});
+    }
     const runId = ResultsManager.getFreshRunId();
     // Get the suite data from the request.
     try {
@@ -63,6 +74,10 @@ async function handleRunSuite(request, response, next) {
     let testSuite = new Suite(context, runId, suiteData);
     try {
         await testSuite.run();
+        if (telemetryClient) {
+            telemetryClient.trackTrace({message: "Finished suite run"});
+        }
+        context.log("Finished suite run with runId " + runId);
         setTimeout(() => {
             ResultsManager.deleteSuiteResult(runId);
             context.log("Deleted suite results for runId " + runId);
@@ -70,6 +85,9 @@ async function handleRunSuite(request, response, next) {
     }
     catch (err) {
         ResultsManager.updateSuiteResults(runId, [], "Error while running test suite", "error");
+        if (telemetryClient) {
+            telemetryClient.trackTrace({message: "Bot Functional Tests Service had an error during suite run"});
+        }
         context.log("Error while running test suite with runId " + runId);
     }
 }
