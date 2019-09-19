@@ -3,6 +3,6 @@
         "timeoutMilliseconds": 5000,
         "testSuiteResultsRetentionSeconds": 3600,
         "defaultBatchSize": 3,
-        "defaultRoleName": "hbs-botFunctionalTestsService"
+        "defaultRoleName": "botFunctionalTestsService"
     }
 }
