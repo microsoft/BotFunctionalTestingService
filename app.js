@@ -50,8 +50,8 @@ async function handleRunTest(request, response, next) {
 async function handleRunSuite(request, response, next) {
     const context = new Context(request, response);
     context.log(`${server.name} processing a suite ${request.method} request.`);
-    sendTelemetry(telemetryClient, "Started suite run");
     const runId = ResultsManager.getFreshRunId();
+    sendTelemetry(telemetryClient, "Started suite run with runIn " + runId);
     // Get the suite data from the request.
     try {
         var suiteData = await SuiteData.fromRequest(request);
