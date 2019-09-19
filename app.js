@@ -80,7 +80,7 @@ async function handleRunSuite(request, response, next) {
     }
     catch (err) {
         ResultsManager.updateSuiteResults(runId, [], "Error while running test suite", "error");
-        sendTelemetry(telemetryClient, "Error occurred during suite run");
+        sendTelemetry(telemetryClient, "Error occurred during suite run with runIn " + runId);
         context.log("Error while running test suite with runId " + runId);
     }
 }
