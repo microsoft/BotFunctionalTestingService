@@ -30,6 +30,7 @@ server.listen(process.env.PORT || 3000, function () {
     if (telemetryClient) {
         telemetryClient.context.tags["ai.cloud.role"] = config.defaults.roleName;
         telemetryClient.trackTrace({message: "Started listening"});
+        telemetryClient.flush();
     }
     console.log("%s listening at %s", server.name, server.url);
 });
@@ -52,6 +53,7 @@ async function handleRunSuite(request, response, next) {
     context.log(`${server.name} processing a suite ${request.method} request.`);
     if (telemetryClient) {
         telemetryClient.trackTrace({message: "Started suite run"});
+        telemetryClient.flush();
     }
     const runId = ResultsManager.getFreshRunId();
     // Get the suite data from the request.
@@ -75,6 +77,7 @@ async function handleRunSuite(request, response, next) {
         await testSuite.run();
         if (telemetryClient) {
             telemetryClient.trackTrace({message: "Finished suite run"});
+            telemetryClient.flush();
         }
         context.log("Finished suite run with runId " + runId);
         setTimeout(() => {
@@ -86,6 +89,7 @@ async function handleRunSuite(request, response, next) {
         ResultsManager.updateSuiteResults(runId, [], "Error while running test suite", "error");
         if (telemetryClient) {
             telemetryClient.trackTrace({message: "Bot Functional Tests Service had an error during suite run"});
+            telemetryClient.flush();
         }
         context.log("Error while running test suite with runId " + runId);
     }
