@@ -8,6 +8,12 @@ var config = require("./config.json");
 
 var restify = require("restify");
 
+const applicationinsights = require("applicationinsights");
+const telemetryClient = process.env["ApplicationInsightsInstrumentationKey"] ? new applicationinsights.TelemetryClient(process.env["ApplicationInsightsInstrumentationKey"]) : null;
+telemetryClient.context.tags["ai.cloud.role"] = process.env["roleName"] ? process.env["roleName"] : config.defaults.defaultRoleName;
+sendTelemetry(telemetryClient, "Server initialized");
+
+
 const server = restify.createServer({
     name: "BotFunctionalTestingService",
     version: "1.0.0"
@@ -24,6 +30,7 @@ server.post("/suite", handleRunSuite);
 server.get("/getResults/:runId", handleGetTestResults);
 
 server.listen(process.env.PORT || 3000, function () {
+    sendTelemetry(telemetryClient, "Server started listening");
     console.log("%s listening at %s", server.name, server.url);
 });
 
@@ -44,6 +51,7 @@ async function handleRunSuite(request, response, next) {
     const context = new Context(request, response);
     context.log(`${server.name} processing a suite ${request.method} request.`);
     const runId = ResultsManager.getFreshRunId();
+    sendTelemetry(telemetryClient, "Started suite run with runIn " + runId);
     // Get the suite data from the request.
     try {
         var suiteData = await SuiteData.fromRequest(request);
@@ -63,6 +71,8 @@ async function handleRunSuite(request, response, next) {
     let testSuite = new Suite(context, runId, suiteData);
     try {
         await testSuite.run();
+        sendTelemetry(telemetryClient, "Finished suite run with runId " + runId);
+        context.log("Finished suite run with runId " + runId);
         setTimeout(() => {
             ResultsManager.deleteSuiteResult(runId);
             context.log("Deleted suite results for runId " + runId);
@@ -70,6 +80,7 @@ async function handleRunSuite(request, response, next) {
     }
     catch (err) {
         ResultsManager.updateSuiteResults(runId, [], "Error while running test suite", "error");
+        sendTelemetry(telemetryClient, "Error occurred during suite run with runIn " + runId);
         context.log("Error while running test suite with runId " + runId);
     }
 }
@@ -99,5 +110,12 @@ async function handleGetTestResults(request, response, next) {
             response.send(500, resultsObject);
             ResultsManager.deleteSuiteResult(runId); // In case of an error while running test suite, delete suite results once user knows about it.
         }
+    }
+}
+
+function sendTelemetry(telemetryClient, message) {
+    if (telemetryClient) {
+        telemetryClient.trackTrace({message: message});
+        telemetryClient.flush();
     }
 }
