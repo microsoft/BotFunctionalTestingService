@@ -10,7 +10,9 @@ var restify = require("restify");
 
 const applicationinsights = require("applicationinsights");
 const telemetryClient = process.env["ApplicationInsightsInstrumentationKey"] ? new applicationinsights.TelemetryClient(process.env["ApplicationInsightsInstrumentationKey"]) : null;
-telemetryClient.context.tags["ai.cloud.role"] = process.env["roleName"] ? process.env["roleName"] : config.defaults.defaultRoleName;
+if (telemetryClient) {
+    telemetryClient.context.tags["ai.cloud.role"] = process.env["roleName"] ? process.env["roleName"] : config.defaults.defaultRoleName;
+}
 sendTelemetry(telemetryClient, "Server initialized");
 
 
