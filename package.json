@@ -20,7 +20,7 @@
     "deep-object-diff": "^1.0.4",
     "request": "^2.83.0",
     "request-promise": "^4.2.2",
-    "restify": "^6.3.4",
+    "restify": "^8.4.0",
     "underscore": "^1.8.3"
   }
 }
