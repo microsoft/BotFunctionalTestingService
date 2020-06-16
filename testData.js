@@ -5,6 +5,7 @@ var HTTP = require("./http");
 var Transcript = require("./transcript");
 
 var config = require("./config.json");
+const Test = require("./test");
 
 class TestData {
 
@@ -37,11 +38,12 @@ class TestData {
         return extractedSecret;
     }
 
-    static inheritedProperties() {
-        return ["version", "timeout", "bot", "userId"];
+
+    createTest(){
+        return new Test();
     }
 
-    static async fromRequest(request) {
+    async fromRequest(request) {
         var testData = null;
         switch (request.method) {
             case "GET":
@@ -54,7 +56,7 @@ class TestData {
         return testData;
     }
 
-    static async getTestData(query) {
+    async getTestData(query) {
         var testURL = query.url;
         if (testURL) {
             var response = await HTTP.getJSON(testURL);
@@ -63,6 +65,10 @@ class TestData {
         else {
             throw new Error("A 'url' parameter should be included on the query string.");
         }
+    }
+
+    static inheritedProperties() {
+        return ["version", "timeout", "bot", "userId"];
     }
 
     static async fromObject(obj, defaults) {
