@@ -30,7 +30,7 @@ class Test {
         // Break the conversation into messages from the user side vs. replies from the bot side
         // Each conversation step contains an array of user messages (typically one) and an array of bot replies (typically one, but it's normal to have more than one)
         // For each conversation step, first send the user message and then wait for the expected reply
-        var testUserId = "test-user-" + uuid().substring(0, 8);
+        var testUserId = testData.userId + uuid().substring(0, 8);
         var conversationSteps = this.createConversationSteps(testData);
         try {
             var initResult = await directline.init(context, testData.secret);

@@ -17,7 +17,7 @@ class DynamicTest extends Test {
                 testData.lastMessageFromBot.text.trim() === 'Here are the clinical trials the patient may qualify for:')
     }
 
-    testConversation(context, testUserId, conversationSteps, conversationId, testData){
+    testConversation(context, testUserId, conversationSteps, conversationId, testData) {
         context.log("testConversation started");
         context.log("testUserId: " + testUserId);
         context.log("conversationSteps: " + utils.stringify(conversationSteps));
@@ -25,7 +25,7 @@ class DynamicTest extends Test {
         context.log("defaultTimeout: " + testData.timeout);
         return new Promise((resolve, reject) => {
             var index = 0;
-             let nextStep = () => {
+            let nextStep = () => {
                 if (!testData.testEnded) {
                     context.log("Testing conversation step " + index);
                     var stepData = {};
@@ -33,7 +33,7 @@ class DynamicTest extends Test {
                         testData.testEnded = true;
                         stepData.userMessage = testData.lastMessageFromBot;
                     } else if (index > testData.maxSteps) {
-                        reject("max steps reached")
+                        return reject("max steps reached")
                     }
 
                     else {
@@ -93,19 +93,19 @@ class DynamicTest extends Test {
             question.exec(lastMessageFromBot.text)
     }
 
-     regex = {
-        ageQuestions: new RegExp(/age|old/, 'gi'),
-        genderQuestions: new RegExp(/gender|sex/, 'gi'),
-        searchQuestions: new RegExp(/search/, 'gi'),
-        matchingTrials: new RegExp(/Matching clinical trials/, 'gi'),
-        countryQuestions: new RegExp(/country/, 'gi'),
-        stateQuestions: new RegExp(/state/, 'gi'),
-        numericQuestions: new RegExp(/^(what is the patient's).*\?/, 'gi'),
-        conditionQuestions: new RegExp(/^(what .* condition).*\?/, 'gi')
+    regex = {
+        ageQuestions: new RegExp(/age|old/, 'i'),
+        genderQuestions: new RegExp(/gender|sex/, 'i'),
+        searchQuestions: new RegExp(/search/, 'i'),
+        matchingTrials: new RegExp(/(matching clinical trials)|(relevant trials)/, 'i'),
+        countryQuestions: new RegExp(/country/, 'i'),
+        stateQuestions: new RegExp(/state/, 'i'),
+        numericQuestions: new RegExp(/^(what is the patient's).*\?/, 'i'),
+        conditionQuestions: new RegExp(/^(what .* condition).*\?/, 'i')
     };
 
-    testStep(context, conversationId, userMessage, expectedReplies, testData) {
-
+    async testStep(context, conversationId, userMessage, expectedReplies, testData) {
+        let pullAnotherMessage = false;
         let messagesToPull = 1;
         if (testData.lastMessageFromBot == undefined) {
             userMessage.text = "begin " + testData.trigger;
@@ -129,7 +129,7 @@ class DynamicTest extends Test {
         else if (this.matchRegex(testData.lastMessageFromBot, this.regex.numericQuestions)) {
             userMessage.text = "20";
         } else if (this.matchRegex(testData.lastMessageFromBot, this.regex.matchingTrials)) {
-            messagesToPull++;
+            pullAnotherMessage = true;
         } else {
             context.log("error - unrecognized message: " + testData.lastMessageFromBot);
             userMessage.text = "start over";
@@ -142,25 +142,31 @@ class DynamicTest extends Test {
         context.log("expectedReplies: " + utils.stringify(expectedReplies));
         context.log("timeoutMilliseconds: " + testData.timeout);
 
-
-        return directline.sendMessage(conversationId, userMessage)
-            .then( (response) =>{
-                var bUserMessageIncluded = response != null;
-                return directline.pollMessages(conversationId, messagesToPull, bUserMessageIncluded, testData.timeout);
-            })
-            .then((messages) => {
-                return this.compareMessages(context, userMessage, expectedReplies, messages, testData);
-            })
-            .catch( (err) =>{
-                var message = `User message '${userMessage.text}' response failed - ${err.message}`;
-                if (err.hasOwnProperty("details")) {
-                    err.details.message = message;
-                }
-                else {
-                    err.message = message;
-                }
-                throw err;
-            });
+        if (pullAnotherMessage) {
+                let bUserMessageIncluded = false;
+                var botReplies = await directline.pollMessages(conversationId, messagesToPull, bUserMessageIncluded, testData.timeout);
+                testData.lastMessageFromBot = botReplies.reverse().find(message => message.text != undefined);
+                return true
+        } else {
+            return directline.sendMessage(conversationId, userMessage)
+                .then((response) => {
+                    var bUserMessageIncluded = response != null;
+                    return directline.pollMessages(conversationId, messagesToPull, bUserMessageIncluded, testData.timeout);
+                })
+                .then((messages) => {
+                    return this.compareMessages(context, userMessage, expectedReplies, messages, testData);
+                })
+                .catch((err) => {
+                    var message = `User message '${userMessage.text}' response failed - ${err.message}`;
+                    if (err.hasOwnProperty("details")) {
+                        err.details.message = message;
+                    }
+                    else {
+                        err.message = message;
+                    }
+                    throw err;
+                });
+        }
     }
 
 

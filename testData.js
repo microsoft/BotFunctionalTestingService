@@ -14,6 +14,8 @@ class TestData {
         this.version = (query && query.version) || (obj && obj.version);
         this.timeout = (query && query.timeout) || (obj && obj.timeout) || config.defaults.timeoutMilliseconds;
         this.bot = (query && query.bot) || (obj && obj.bot) || process.env["DefaultBot"];
+        this.userId = query.userId || "test-user-";
+        
         if (!this.bot) {
             throw new Error("Configuration error: No bot name was given as a query parameter nor as a test property and no DefaultBot in application settings.");
         }
