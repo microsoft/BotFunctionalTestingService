@@ -4,6 +4,7 @@ var applicationinsights = require("applicationinsights");
 var telemetry = process.env["ApplicationInsightsInstrumentationKey"] ? new applicationinsights.TelemetryClient(process.env["ApplicationInsightsInstrumentationKey"]) : null;
 
 var utils = require("./utils");
+var config = require("./config.json");
 const sleep = require("util").promisify(setTimeout);
 
 var Test = require("./test");
