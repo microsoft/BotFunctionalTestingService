@@ -3,7 +3,7 @@ var _ = require("underscore");
 var HTTP = require("./http");
 var TestData = require("./testData");
 
-
+const DynamicTestTypeName = "DynamicTestData";
 class SuiteData {
     
     constructor(obj, query) {
@@ -58,7 +58,12 @@ async function createTestData(tests, defaults) {
     async function createData(test, index) {
         return new Promise(async function(resolve, reject) {
             try {
-                resolve(await TestData.fromObject(test, defaults));
+                if(test.testType == DynamicTestTypeName){
+                    resolve(await DynamicTestData.fromObject(test, defaults));
+                }else{
+                    resolve(await TestData.fromObject(test, defaults));
+                }
+                
             }
             catch (err) {
                 reject(new Error(`tests[${index}]: ${err.message}`));

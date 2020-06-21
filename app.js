@@ -5,6 +5,8 @@ var SuiteData = require("./suiteData.js");
 var Suite = require("./suite");
 var ResultsManager = require("./resultsManager");
 var config = require("./config.json");
+var chai = require('chai'), chaiHttp = require('chai-http');
+chai.use(chaiHttp);
 
 var restify = require("restify");
 
@@ -75,6 +77,7 @@ async function handleRunSuite(request, response, next) {
         await testSuite.run();
         sendTelemetry(telemetryClient, "Finished suite run with runId " + runId);
         context.log("Finished suite run with runId " + runId);
+        handleGetTestResults(chai.request("http://" + request.headers.host).get('/getResults/').query({ runId: runId }), response);
         setTimeout(() => {
             ResultsManager.deleteSuiteResult(runId);
             context.log("Deleted suite results for runId " + runId);
@@ -105,9 +108,11 @@ async function handleGetTestResults(request, response, next) {
     }
     else { // Results are ready
         response.setHeader("content-type", "application/json");
-        if (resultsObject["verdict"] === "success" || resultsObject["verdict"] === "failure") { // If tests finished without errors, send response with status code 200.
+        if (resultsObject["verdict"] === "success") { // If tests finished without errors, send response with status code 200.
             response.send(200, resultsObject);
         }
+        else if (resultsObject["verdict"] === "failure")
+            response.send(500, resultsObject);
         else if (resultsObject["verdict"] === "error") { // If there was an error while running the tests, send response with status code 500
             response.send(500, resultsObject);
             ResultsManager.deleteSuiteResult(runId); // In case of an error while running test suite, delete suite results once user knows about it.

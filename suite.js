@@ -2,9 +2,9 @@ var _ = require("underscore");
 var applicationinsights = require("applicationinsights");
 
 var telemetry = process.env["ApplicationInsightsInstrumentationKey"] ? new applicationinsights.TelemetryClient(process.env["ApplicationInsightsInstrumentationKey"]) : null;
+var config = require("./config.json"); // was used below without being imported
 
 var utils = require("./utils");
-var config = require("./config.json");
 const sleep = require("util").promisify(setTimeout);
 
 var Test = require("./test");
@@ -22,7 +22,7 @@ class Suite {
 
      async runTest(testData) {
         try {
-            const result = await Test.perform(this.context, testData);
+            const result = await testData.createTest().perform(this.context, testData);
             return result;
         }
         catch (err) {
