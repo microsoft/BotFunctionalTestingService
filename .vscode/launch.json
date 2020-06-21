@@ -1,0 +1,21 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "Launch Program",
+            "skipFiles": [
+                "<node_internals>/**"
+            ],
+            "env": {
+                "SECRETS": "{\"ctm-bot-covid19-wadnft\": \"27VcFzT8L68.82xE6r8TC1As951o-4fDcSyHgy0_PPxTIgn_JS9Bj3o\",\"dev-bot-service-6acwng\": \"nDSYt3x-6FY.RTNFFdQ7wwDZAovVmTW2lMRKGhCHa36sCLVG26tqhNI\",\"test-bot-s-4rwqys\":\"zQcx1WPOfwY.oXxuNClqwd8BIrNnc5-BPZS7Ywgcfqx2VGXzuCBK5IM\"}",
+                "DefaultBot" : "test-bot-s-4rwqys"
+            },
+            "program": "${workspaceFolder}\\app.js"
+        }
+    ]
+}
