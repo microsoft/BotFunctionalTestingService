@@ -2,6 +2,7 @@ var _ = require("underscore");
 
 var HTTP = require("./http");
 var TestData = require("./testData");
+var DynamicTestData = require("./dynamicTestData");
 
 const DynamicTestTypeName = "DynamicTestData";
 class SuiteData {
