@@ -5,6 +5,7 @@ var HTTP = require("./http");
 var Transcript = require("./transcript");
 
 var config = require("./config.json");
+const Test = require("./test");
 
 class TestData {
 
@@ -13,6 +14,8 @@ class TestData {
         this.version = (query && query.version) || (obj && obj.version);
         this.timeout = (query && query.timeout) || (obj && obj.timeout) || config.defaults.timeoutMilliseconds;
         this.bot = (query && query.bot) || (obj && obj.bot) || process.env["DefaultBot"];
+        this.userId = query.userId || "test-user-";
+        
         if (!this.bot) {
             throw new Error("Configuration error: No bot name was given as a query parameter nor as a test property and no DefaultBot in application settings.");
         }
@@ -37,11 +40,12 @@ class TestData {
         return extractedSecret;
     }
 
-    static inheritedProperties() {
-        return ["version", "timeout", "bot", "userId"];
+
+    createTest(){
+        return new Test();
     }
 
-    static async fromRequest(request) {
+    async fromRequest(request) {
         var testData = null;
         switch (request.method) {
             case "GET":
@@ -54,7 +58,7 @@ class TestData {
         return testData;
     }
 
-    static async getTestData(query) {
+    async getTestData(query) {
         var testURL = query.url;
         if (testURL) {
             var response = await HTTP.getJSON(testURL);
@@ -63,6 +67,10 @@ class TestData {
         else {
             throw new Error("A 'url' parameter should be included on the query string.");
         }
+    }
+
+    static inheritedProperties() {
+        return ["version", "timeout", "bot", "userId"];
     }
 
     static async fromObject(obj, defaults) {

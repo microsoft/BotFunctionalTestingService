@@ -59,7 +59,7 @@ async function handleRunSuite(request, response, next) {
         var suiteData = await SuiteData.fromRequest(request);
         context.log("Successfully got all tests from the request for runId " + runId);
     }
-    catch {
+    catch (e){
         response.setHeader("content-type", "application/json");
         response.send(400, {results: [], errorMessage:"Could not get tests data from request", verdict:"error"});
         ResultsManager.deleteSuiteResult(runId);

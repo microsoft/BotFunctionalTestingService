@@ -4,6 +4,7 @@
   "description": "Bot functional testing framework",
   "main": "app.js",
   "scripts": {
+    "run": "node app.js",
     "build": "echo no build defined",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -17,6 +18,7 @@
   "dependencies": {
     "applicationinsights": "^1.0.3",
     "chai": "^4.1.2",
+    "chai-http": "^4.3.0",
     "deep-object-diff": "^1.0.4",
     "request": "^2.83.0",
     "request-promise": "^4.2.2",
