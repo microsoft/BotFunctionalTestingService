@@ -83,22 +83,13 @@ function convertColumnAttributesToCamelCase(currEntry) {
                                     columns.forEach(column => {
                                         if (column.hasOwnProperty("items")) {
                                             const colItems = column["items"];
+                                            const attributesToEdit = ["size", "weight", "color", "horizontalAlignment", "spacing"];
                                             colItems.forEach(colItem => {
-                                                if (colItem.hasOwnProperty("size")) {
-                                                    colItem["size"] = colItem["size"].charAt(0).toLowerCase() + colItem["size"].slice(1, colItem["size"].length);
-                                                }
-                                                if (colItem.hasOwnProperty("weight")) {
-                                                    colItem["weight"] = colItem["weight"].charAt(0).toLowerCase() + colItem["weight"].slice(1, colItem["weight"].length);
-                                                }
-                                                if (colItem.hasOwnProperty("color")) {
-                                                    colItem["color"] = colItem["color"].charAt(0).toLowerCase() + colItem["color"].slice(1, colItem["color"].length);
-                                                }
-                                                if (colItem.hasOwnProperty("horizontalAlignment")) {
-                                                    colItem["horizontalAlignment"] = colItem["horizontalAlignment"].charAt(0).toLowerCase() + colItem["horizontalAlignment"].slice(1, colItem["horizontalAlignment"].length);
-                                                }
-                                                if (colItem.hasOwnProperty("spacing")) {
-                                                    colItem["spacing"] = colItem["spacing"].charAt(0).toLowerCase() + colItem["spacing"].slice(1, colItem["spacing"].length);
-                                                }
+                                                attributesToEdit.forEach(attr => {
+                                                    if (colItem.hasOwnProperty(attr)) {
+                                                        colItem[attr] = colItem[attr].charAt(0).toLowerCase() + colItem[attr].slice(1, colItem[attr].length);
+                                                    }
+                                                });
                                             });
                                         }
                                     });
