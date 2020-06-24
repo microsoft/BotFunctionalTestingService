@@ -106,6 +106,7 @@ function convertColumnAttributesToCamelCase(currEntry) {
 
 /** This is the main function - It iterates over all entries of the transcript, and applies all handlers on each entry **/
 function main(path) {
+    console.log("Started");
     let contentBuffer;
     try {
         contentBuffer = fs.readFileSync(path);
@@ -127,6 +128,7 @@ function main(path) {
     try {
         const filename = path.replace(/^.*[\\\/]/, '').replace(/\.[^/.]+$/, ''); // Extracts filename without extension from full path.
         fs.writeFileSync(filename + '_transformed.transcript', JSON.stringify(jsonTranscript));
+        console.log("Done");
     } catch (e) {
         console.log("Cannot write file ", e);
     }
