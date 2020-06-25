@@ -145,9 +145,8 @@ class DynamicTest extends Test {
                 } else if (this.checkIfConversationEnded(testData)) {
                     //do nothing
                 } else {
-                    context.log("error - unrecognized message: " + testData.lastMessageFromBot);
+                    context.log("error - unrecognized message: " + testData.lastMessageFromBot.text);
                     throw "error - unrecognized message: " + testData.lastMessageFromBot.text;
-
                 }
             }
         }
