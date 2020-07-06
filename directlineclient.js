@@ -3,7 +3,7 @@ var rp = require("request-promise");
 var utils = require("./utils.js");
 
 // config items
-var pollInterval = 300;
+var pollInterval = 500;
 
 var directLineStartConversationUrl = "https://directline.botframework.com/v3/directline/conversations";
 var directLineConversationUrlTemplate = "https://directline.botframework.com/v3/directline/conversations/{id}/activities";
