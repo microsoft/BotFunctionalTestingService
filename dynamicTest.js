@@ -42,7 +42,7 @@ class DynamicTest extends Test {
             testData.lastMessageFromBot.text.match(testData.conversationEndRegex)
     }
 
-    testConversation(context, testUserId, conversationSteps, conversationId, testData) {
+    testConversation = (context, testUserId, conversationSteps, conversationId, testData) => {
         context.log("testConversation started");
         context.log("testUserId: " + testUserId);
         context.log("conversationSteps: " + utils.stringify(conversationSteps));
@@ -110,7 +110,7 @@ class DynamicTest extends Test {
     }
 
 
-     testStep = async (context, conversationId, userMessage, expectedReplies, testData) => {
+    testStep = async (context, conversationId, userMessage, expectedReplies, testData) => {
         let pullAnotherMessage = false;
         let messagesToPull = 1;
         if (testData.lastMessageFromBot == undefined) {
@@ -143,6 +143,7 @@ class DynamicTest extends Test {
                     userMessage.text = this.getFirstChoice(testData.lastMessageFromBot); // first choice
                 } else if (this.checkIfConversationEnded(testData)) {
                     //do nothing
+                    context.log("conversation end step");
                 } else {
                     context.log("error - unrecognized message: " + testData.lastMessageFromBot.text);
                     throw "error - unrecognized message: " + testData.lastMessageFromBot.text;
@@ -158,32 +159,26 @@ class DynamicTest extends Test {
 
         if (pullAnotherMessage) {
             let bUserMessageIncluded = false;
-            var botReplies = await directline.pollMessages(conversationId, messagesToPull, bUserMessageIncluded, testData.timeout,testData.pollInterval);
+            var botReplies = await directline.pollMessages(conversationId, messagesToPull, bUserMessageIncluded, testData.timeout, testData.pollInterval);
             testData.lastMessageFromBot = botReplies.reverse().find(message => message.text != undefined);
             return true
         } else {
-            return directline.sendMessage(conversationId, userMessage)
-                .then((response) => {
-                    var bUserMessageIncluded = response != null;
-                    return directline.pollMessages(conversationId, messagesToPull, bUserMessageIncluded, testData.timeout,testData.pollInterval);
-                })
-                .then((messages) => {
-                    return this.compareMessages(context, userMessage, expectedReplies, messages, testData);
-                })
-                .catch((err) => {
-                    if(err.statusCode == 502){
-                        return this.testStep(context, conversationId, userMessage, expectedReplies, testData);
-                    }else{
-                    var message = `User message '${userMessage.text}' response failed - ${err.message}`;
-                    if (err.hasOwnProperty("details")) {
-                        err.details.message = message;
-                    }
-                    else {
-                        err.message = message;
-                    }
-                    throw err;
+            try {
+                let response = await directline.sendMessage(conversationId, userMessage)
+                var bUserMessageIncluded = response != null;
+                let messages = await directline.pollMessages(conversationId, messagesToPull, bUserMessageIncluded, testData.timeout, testData.pollInterval);
+                let comapre = this.compareMessages(context, userMessage, expectedReplies, messages, testData);
+                return comapre;
+            } catch (err) {
+                var message = `User message '${userMessage.text}' response failed - ${err.message}`;
+                if (err.hasOwnProperty("details")) {
+                    err.details.message = message;
                 }
-                });
+                else {
+                    err.message = message;
+                }
+                throw err;
+            };
         }
     }
 
@@ -218,9 +213,9 @@ class DynamicTest extends Test {
                     if (match) {
                         let test = t.test;
                         if (test.value && test.value.startsWith("$")) {
-                            if(testData.vars[test.value]){
+                            if (testData.vars[test.value]) {
                                 test.value = testData.vars[test.value]
-                            }else{
+                            } else {
                                 test.value = test.default
                             }
                         }

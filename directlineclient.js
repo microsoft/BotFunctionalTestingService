@@ -58,7 +58,7 @@ DirectLineClient.prototype.sendMessage = function (conversationId, message) {
         promise = fetch(uri, postMessageOptions)
             .then(async function (response) {
                 self.context.log("sendMessage response: " + utils.stringify(response));
-                return response.json();
+                return await response.json();
             });
     }
     else {
@@ -102,7 +102,7 @@ DirectLineClient.prototype.pollMessages = function (conversationId, nMessages, b
                     if (messages.length < nExpectedActivities) {
                         self.context.log(`We have less than expected ${nExpectedActivities} activities - retry number ${retries + 1}...`);
                         retries++;
-                        setTimeout(polling, pollInterval);
+                        setTimeout(polling, pollInterval); 
                     }
                     else {
                         self.watermark[conversationId] = response.watermark;
