@@ -4,7 +4,7 @@ var _ = require("underscore");
 var HTTP = require("./http");
 var DynamicTest = require("./dynamicTest.js");
 var Transcript = require("./transcript");
-
+var SuiteData = require("./suiteData");
 var config = require("./config.json");
 
 class DynamicTestData {
@@ -15,11 +15,11 @@ class DynamicTestData {
         this.version = (query && query.version) 
         this.timeout = (query && query.timeout) || config.defaults.timeoutMilliseconds;
         this.bot = (query && query.bot) || process.env["DefaultBot"];
-        this.scenario = (test && test.scenario)  || (query && query.trigger) || "hi";
+        this.conversationStartText = (test && test.conversationStartText)  || (query && query.trigger) || "hi";
         this.defaultSelectedChoice = (test && test.defaultSelectedChoice)  || (query && query.defaultSelectedChoice) || 0;
         this.conversationEndRegex = (test && test.conversationEndRegex)  || (query && query.conversationEndRegex)
         this.dynamicQA = (test && test.dynamicQA)
-        this.tests = (test && test.tests)
+        this.assertions = (test && test.assertions)
         this.maxSteps = 35;
         this.trialsCount = -1;
         this.prevTrialsCount = -1;
@@ -35,19 +35,20 @@ class DynamicTestData {
         if (!this.conversationEndRegex) {
             throw new Error(`Configuration error: conversationEndRegex is missing for ${this.bot}.`);
         }
-        if (!this.tests) {
+        if (!this.assertions) {
             throw new Error(`Configuration error: tests is missing for ${this.bot}.`);
         }
         this.userId = (query && (query.userId || query.userid));
 
         this.conversationEndRegex = this.regexFromString(this.conversationEndRegex)
 
+        //create regex objects for better performance
         for (let i = 0; i < this.dynamicQA.length; i++) {   
             this.dynamicQA[i].regex = this.regexFromString(this.dynamicQA[i].regex)
         }
 
-        for (let i = 0; i < this.tests.length; i++) {
-            this.tests[i].regex = this.regexFromString(this.tests[i].regex)
+        for (let i = 0; i < this.assertions.length; i++) {
+            this.assertions[i].regex = this.regexFromString(this.assertions[i].regex)
         }
 
     }
@@ -107,10 +108,6 @@ class DynamicTestData {
         Object.setPrototypeOf(testData, testDataProto);
         return testData;
     }
-
-
-    
-
 }
 
 module.exports = DynamicTestData;

@@ -3,7 +3,7 @@ var rp = require("request-promise");
 var utils = require("./utils.js");
 
 // config items
-var pollInterval = 500;
+var pollInterval = 300;
 
 var directLineStartConversationUrl = "https://directline.botframework.com/v3/directline/conversations";
 var directLineConversationUrlTemplate = "https://directline.botframework.com/v3/directline/conversations/{id}/activities";
@@ -70,7 +70,7 @@ DirectLineClient.prototype.sendMessage = function(conversationId, message) {
     return promise;
 }
 
-DirectLineClient.prototype.pollMessages = function(conversationId, nMessages, bUserMessageIncluded, maxTimeout) {
+DirectLineClient.prototype.pollMessages = function(conversationId, nMessages, bUserMessageIncluded, maxTimeout,customPollInterval) {
     this.context.log("pollMessages started");
     this.context.log("conversationId: " + conversationId);
     this.context.log("nMessages: " + nMessages);
@@ -89,6 +89,7 @@ DirectLineClient.prototype.pollMessages = function(conversationId, nMessages, bU
     };
     
     var retries = 0;
+    pollInterval = customPollInterval  || pollInterval
     var maxRetries = (maxTimeout - 1) / pollInterval + 1;
     var messages;
     var nExpectedActivities = bUserMessageIncluded ? nMessages + 1 : nMessages;

@@ -53,7 +53,7 @@ class DynamicTest extends Test {
             let nextStep = () => {
                 if (!testData.testEnded) {
                     context.log("Testing conversation step " + index);
-                    var stepData = {};
+                    let stepData = {};
                     if (this.checkIfConversationEnded(testData)) {
                         testData.testEnded = true;
                         stepData.userMessage = testData.lastMessageFromBot;
@@ -115,7 +115,7 @@ class DynamicTest extends Test {
         let pullAnotherMessage = false;
         let messagesToPull = 1;
         if (testData.lastMessageFromBot == undefined) {
-            userMessage.text = "begin " + testData.scenario;
+            userMessage.text = testData.conversationStartText;
         } else {
             let foundMatch = false;
             testData.dynamicQA.forEach(dqa => {
@@ -159,14 +159,14 @@ class DynamicTest extends Test {
 
         if (pullAnotherMessage) {
             let bUserMessageIncluded = false;
-            var botReplies = await directline.pollMessages(conversationId, messagesToPull, bUserMessageIncluded, testData.timeout);
+            var botReplies = await directline.pollMessages(conversationId, messagesToPull, bUserMessageIncluded, testData.timeout,testData.pollInterval);
             testData.lastMessageFromBot = botReplies.reverse().find(message => message.text != undefined);
             return true
         } else {
             return directline.sendMessage(conversationId, userMessage)
                 .then((response) => {
                     var bUserMessageIncluded = response != null;
-                    return directline.pollMessages(conversationId, messagesToPull, bUserMessageIncluded, testData.timeout);
+                    return directline.pollMessages(conversationId, messagesToPull, bUserMessageIncluded, testData.timeout,testData.pollInterval);
                 })
                 .then((messages) => {
                     return this.compareMessages(context, userMessage, expectedReplies, messages, testData);
@@ -209,9 +209,8 @@ class DynamicTest extends Test {
         testData.lastMessageFromBot = botReplies.reverse().find(message => message.text != undefined);
         for (let i = 0; i < botReplies.length; i++) {
             var botReply = botReplies[i];
-
             if (botReply.hasOwnProperty("text")) {
-                testData.tests.filter(t => t.test.target == "Text").forEach(t => {
+                testData.assertions.filter(t => t.test.target == "Text").forEach(t => {
                     let match = botReply.text.match(t.regex)
                     if (match) {
                         let test = t.test;

@@ -73,7 +73,6 @@ async function createTestData(tests, defaults) {
                 }else{
                     resolve(await TestData.fromObject(test, defaults));
                 }
-                
             }
             catch (err) {
                 reject(new Error(`tests[${index}]: ${err.message}`));
