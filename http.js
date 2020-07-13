@@ -1,4 +1,4 @@
-var rp = require("request-promise");
+var fetch = require("node-fetch");
 
 class HTTP {
     static async getJSON(url) {
@@ -7,8 +7,8 @@ class HTTP {
             uri: url,
             json: true
         };
-        var response = await rp(getOptions);
-        return response;
+        var response = await fetch(url)
+        return response.json();
     }
 }
 

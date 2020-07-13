@@ -60,7 +60,6 @@ class DynamicTest extends Test {
                     } else if (index > testData.maxSteps) {
                         return reject("max steps reached")
                     }
-
                     else {
                         stepData.userMessage = testData.lastMessageFromBot;
                     }
@@ -111,7 +110,7 @@ class DynamicTest extends Test {
     }
 
 
-    async testStep(context, conversationId, userMessage, expectedReplies, testData) {
+     testStep = async (context, conversationId, userMessage, expectedReplies, testData) => {
         let pullAnotherMessage = false;
         let messagesToPull = 1;
         if (testData.lastMessageFromBot == undefined) {
@@ -172,6 +171,9 @@ class DynamicTest extends Test {
                     return this.compareMessages(context, userMessage, expectedReplies, messages, testData);
                 })
                 .catch((err) => {
+                    if(err.statusCode == 502){
+                        return this.testStep(context, conversationId, userMessage, expectedReplies, testData);
+                    }else{
                     var message = `User message '${userMessage.text}' response failed - ${err.message}`;
                     if (err.hasOwnProperty("details")) {
                         err.details.message = message;
@@ -180,6 +182,7 @@ class DynamicTest extends Test {
                         err.message = message;
                     }
                     throw err;
+                }
                 });
         }
     }

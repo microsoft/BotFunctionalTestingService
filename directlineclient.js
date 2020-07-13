@@ -1,4 +1,4 @@
-var rp = require("request-promise");
+var fetch = require("node-fetch");
 
 var utils = require("./utils.js");
 
@@ -8,36 +8,37 @@ var pollInterval = 300;
 var directLineStartConversationUrl = "https://directline.botframework.com/v3/directline/conversations";
 var directLineConversationUrlTemplate = "https://directline.botframework.com/v3/directline/conversations/{id}/activities";
 
-DirectLineClient = function() {
+DirectLineClient = function () {
     this.context = null;
     this.headers = {};
     this.watermark = {};
 }
 
-DirectLineClient.prototype.init = function(context, secret) {
+DirectLineClient.prototype.init = function (context, secret) {
     context.log("init started");
     var self = this;
     this.context = context;
     var headers = {
-        Authorization: "Bearer " + secret
+        Authorization: "Bearer " + secret,
     };
+
+    headers['Content-Type'] = 'application/json'
     var startConversationOptions = {
         method: "POST",
-        uri: directLineStartConversationUrl,
         headers: headers,
-        json: true
     };
-    var promise = rp(startConversationOptions)
-        .then(function(response) {
-            context.log("init response: " + utils.stringify(response));
-            self.watermark[response.conversationId] = null;
-            self.headers[response.conversationId] = headers;
-            return response;
-        });
+
+    var promise = fetch(directLineStartConversationUrl, startConversationOptions).then(async response => {
+        response = await response.json()
+        context.log("init response: " + utils.stringify(response));
+        self.watermark[response.conversationId] = null;
+        self.headers[response.conversationId] = headers;
+        return response;
+    });
     return promise;
 }
 
-DirectLineClient.prototype.sendMessage = function(conversationId, message) {
+DirectLineClient.prototype.sendMessage = function (conversationId, message) {
     this.context.log("sendMessage started");
     this.context.log("conversationId: " + conversationId);
     this.context.log("message: " + utils.stringify(message));
@@ -50,16 +51,14 @@ DirectLineClient.prototype.sendMessage = function(conversationId, message) {
     if (isValidMessage(message)) {
         var postMessageOptions = {
             method: "POST",
-            uri: getConversationUrl(conversationId),
             headers: self.headers[conversationId],
-            body: message,
-            json: true
+            body: JSON.stringify(message),
         };
-
-        promise = rp(postMessageOptions)
-            .then(function(response) {
+        let uri = getConversationUrl(conversationId);
+        promise = fetch(uri, postMessageOptions)
+            .then(async function (response) {
                 self.context.log("sendMessage response: " + utils.stringify(response));
-                return response;
+                return response.json();
             });
     }
     else {
@@ -70,7 +69,7 @@ DirectLineClient.prototype.sendMessage = function(conversationId, message) {
     return promise;
 }
 
-DirectLineClient.prototype.pollMessages = function(conversationId, nMessages, bUserMessageIncluded, maxTimeout,customPollInterval) {
+DirectLineClient.prototype.pollMessages = function (conversationId, nMessages, bUserMessageIncluded, maxTimeout, customPollInterval) {
     this.context.log("pollMessages started");
     this.context.log("conversationId: " + conversationId);
     this.context.log("nMessages: " + nMessages);
@@ -83,41 +82,41 @@ DirectLineClient.prototype.pollMessages = function(conversationId, nMessages, bU
 
     var getMessagesOptions = {
         method: "GET",
-        uri: getConversationUrl(conversationId) + (this.watermark[conversationId] ? "?watermark=" + this.watermark[conversationId] : ""),
         headers: self.headers[conversationId],
-        json: true
     };
-    
+
+    var uri = getConversationUrl(conversationId) + (this.watermark[conversationId] ? "?watermark=" + this.watermark[conversationId] : "")
     var retries = 0;
-    pollInterval = customPollInterval  || pollInterval
+    pollInterval = customPollInterval || pollInterval
     var maxRetries = (maxTimeout - 1) / pollInterval + 1;
     var messages;
     var nExpectedActivities = bUserMessageIncluded ? nMessages + 1 : nMessages;
-    var promise = new Promise(function(resolve, reject) {
-        var polling = function() {
+    var promise = new Promise(function (resolve, reject) {
+        var polling = async function () {
             if (retries < maxRetries) {
-                rp(getMessagesOptions)
-                    .then(function(response) {
-                        messages = response.activities;
-                        self.context.log(`Got ${messages.length} total activities (including user's response)`);
-                        if (messages.length < nExpectedActivities) {
-                            self.context.log(`We have less than expected ${nExpectedActivities} activities - retry number ${retries + 1}...`);
-                            retries++;
-                            setTimeout(polling, pollInterval);                        
-                        }
-                        else {
-                            self.watermark[conversationId] = response.watermark;
-                            self.context.log(`pollMessages messages: ${utils.stringify(messages)}`)
-                            resolve(messages);
-                        }
-                    })
-                    .catch(function(err) {
-                        self.context.log("failed to get actitvities, retrying...");
+                try {
+                    let response = await fetch(uri, getMessagesOptions);
+                    response = await response.json();
+                    messages = response.activities;
+                    self.context.log(`Got ${messages.length} total activities (including user's response)`);
+                    if (messages.length < nExpectedActivities) {
+                        self.context.log(`We have less than expected ${nExpectedActivities} activities - retry number ${retries + 1}...`);
                         retries++;
                         setTimeout(polling, pollInterval);
-                    });
-            }
-            else {
+                    }
+                    else {
+                        self.watermark[conversationId] = response.watermark;
+                        self.context.log(`pollMessages messages: ${utils.stringify(messages)}`)
+                        resolve(messages);
+                    }
+
+                } catch (err) {
+                    self.context.log("failed to get actitvities, retrying...");
+                    retries++;
+                    setTimeout(polling, pollInterval);
+                }
+
+            } else {
                 self.context.log(`pollMessages messages: ${utils.stringify(messages)}`)
                 reject(new Error(`Could not obtain ${nMessages} responses`));
             }
