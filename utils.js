@@ -6,7 +6,8 @@ var Utils = function () {
 
 Utils.prototype.stringify = function(obj, space) {
     space = space || stringifySpace;
-    return JSON.stringify(obj, null, space);
+    let aaa = JSON.stringify(obj, null, space)
+    return aaa;
 }
 
 module.exports = new Utils();

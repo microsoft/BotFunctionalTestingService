@@ -42,7 +42,7 @@ class DynamicTest extends Test {
             testData.lastMessageFromBot.text.match(testData.conversationEndRegex)
     }
 
-    testConversation = (context, testUserId, conversationSteps, conversationId, testData) => {
+    testConversation (context, testUserId, conversationSteps, conversationId, testData) {
         context.log("testConversation started");
         context.log("testUserId: " + testUserId);
         context.log("conversationSteps: " + utils.stringify(conversationSteps));
@@ -110,7 +110,7 @@ class DynamicTest extends Test {
     }
 
 
-    testStep = async (context, conversationId, userMessage, expectedReplies, testData) => {
+    async testStep  (context, conversationId, userMessage, expectedReplies, testData) {
         let pullAnotherMessage = false;
         let messagesToPull = 1;
         if (testData.lastMessageFromBot == undefined) {

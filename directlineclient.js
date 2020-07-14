@@ -106,7 +106,8 @@ DirectLineClient.prototype.pollMessages = function (conversationId, nMessages, b
                     }
                     else {
                         self.watermark[conversationId] = response.watermark;
-                        self.context.log(`pollMessages messages: ${utils.stringify(messages)}`)
+                        self.context.log(`pollMessages messages: ${utils.stringify(messages.map(m=>m.text))}`);
+                        self.context.dir(messages)
                         resolve(messages);
                     }
 
