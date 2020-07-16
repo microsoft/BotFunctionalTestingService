@@ -9,6 +9,10 @@ class Context {
     log(msg) {
         console.log(msg);
     }
+    
+    dir(obg) {
+        console.dir(obg);
+    }
 
     done() {
         this.response.setHeader("content-type", this.res.contentType);

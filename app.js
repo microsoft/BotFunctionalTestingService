@@ -59,11 +59,12 @@ async function handleRunSuite(request, response, next) {
         var suiteData = await SuiteData.fromRequest(request);
         context.log("Successfully got all tests from the request for runId " + runId);
     }
-    catch {
+    catch (e){
         response.setHeader("content-type", "application/json");
         response.send(400, {results: [], errorMessage:"Could not get tests data from request", verdict:"error"});
         ResultsManager.deleteSuiteResult(runId);
         context.log("Could not get tests data from request for runId " + runId);
+        context.log(e);
         return;
     }
     // Send a response with status code 202 and location header based on runId, and start the tests.
@@ -89,14 +90,13 @@ async function handleRunSuite(request, response, next) {
 
 async function handleGetTestResults(request, response, next) {
     const runId = request.params.runId;
-    const activeRunIds = ResultsManager.getActiveRunIds();
-    if (!activeRunIds.has(runId)) { // If runId doesn't exist (either deleted or never existed)
+    if (!await ResultsManager.hasRunIds(runId)) { // If runId doesn't exist (either deleted or never existed)
         response.setHeader("content-type", "application/json");
         response.send(404, {results: [], errorMessage:"RunId does not exist.", verdict:"error"});
         return;
     }
     // Else, runId exists.
-    const resultsObject = ResultsManager.getSuiteResults(runId);
+    const resultsObject = await ResultsManager.getSuiteResults(runId);
     if (!resultsObject) { // If results are not ready
         response.setHeader("content-type", "application/json");
         response.setHeader("Location", "http://" + request.headers.host + "/getResults/" + runId);
@@ -110,7 +110,7 @@ async function handleGetTestResults(request, response, next) {
         }
         else if (resultsObject["verdict"] === "error") { // If there was an error while running the tests, send response with status code 500
             response.send(500, resultsObject);
-            ResultsManager.deleteSuiteResult(runId); // In case of an error while running test suite, delete suite results once user knows about it.
+            await ResultsManager.deleteSuiteResult(runId); // In case of an error while running test suite, delete suite results once user knows about it.
         }
     }
 }
