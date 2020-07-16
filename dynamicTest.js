@@ -153,8 +153,7 @@ class DynamicTest extends Test {
 
         context.log("testStep started");
         context.log("conversationId: " + conversationId);
-        context.log("userMessage: " + utils.stringify(userMessage));
-        context.log("expectedReplies: " + utils.stringify(expectedReplies));
+        context.log("userMessage: " + utils.stringify(userMessage.text));
         context.log("timeoutMilliseconds: " + testData.timeout);
 
         if (pullAnotherMessage) {
@@ -198,7 +197,6 @@ class DynamicTest extends Test {
 
     compareMessages(context, userMessage, expectedReplies, actualMessages, testData) {
         context.log("compareMessages started");
-        context.log("actualMessages: " + utils.stringify(actualMessages));
         // Filter out messages from the (test) user, leaving only bot replies
         var botReplies = _.reject(actualMessages,
             function (message) {
