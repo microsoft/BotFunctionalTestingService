@@ -27,6 +27,7 @@ DirectLineClient.prototype.init = function(context, secret) {
         headers: headers,
         json: true
     };
+    console.log(`Init conversation request: ${JSON.stringify(startConversationOptions)}`);
     var promise = rp(startConversationOptions)
         .then(function(response) {
             context.log("init response: " + utils.stringify(response));
@@ -56,6 +57,7 @@ DirectLineClient.prototype.sendMessage = function(conversationId, message) {
             json: true
         };
 
+        console.log(`Send message request: ${JSON.stringify(postMessageOptions)}`);
         promise = rp(postMessageOptions)
             .then(function(response) {
                 self.context.log("sendMessage response: " + utils.stringify(response));
@@ -95,6 +97,7 @@ DirectLineClient.prototype.pollMessages = function(conversationId, nMessages, bU
     var promise = new Promise(function(resolve, reject) {
         var polling = function() {
             if (retries < maxRetries) {
+                console.log(`Poll messages request: ${JSON.stringify(getMessagesOptions)}`);
                 rp(getMessagesOptions)
                     .then(function(response) {
                         messages = response.activities;
