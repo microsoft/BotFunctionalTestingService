@@ -35,8 +35,78 @@ function addSeparationAttribute(currEntry) {
     }
 }
 
+function convertColumnsWidthToString(items) {
+    for (var column of items["columns"]) {
+        if (column.hasOwnProperty("width")) {
+            column["width"] = column["width"] + "";
+        }
+    }
+}
+// Handler 3
+function convertNumbersToString(currEntry) {
+    if (currEntry['type'] === 'message') {
+        if (currEntry.hasOwnProperty("attachments")) {
+            for (var attachment of currEntry["attachments"]) {
+                if (attachment.hasOwnProperty("content") && attachment["content"].hasOwnProperty("body")) {
+                    for (var bodyItem of attachment["content"]["body"]) {
+                        if (bodyItem.hasOwnProperty("columns")) {
+                            convertColumnsWidthToString(bodyItem);
+                        } else if (bodyItem.hasOwnProperty("items")) {
+                            for (var item of bodyItem["items"]) {
+                                if (item.hasOwnProperty("columns")) {
+                                    convertColumnsWidthToString(item);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+// Handler 4
+function convertColumnAttributesToCamelCase(currEntry) {
+    if (currEntry['type'] === 'message') {
+        if (currEntry.hasOwnProperty("attachments")) {
+            const attachments = currEntry["attachments"];
+            attachments.forEach(attachment => {
+                if (attachment.hasOwnProperty("content")) {
+                    const content = attachment["content"];
+                    if (content.hasOwnProperty("body")) {
+                        const contentBody = content["body"][0];
+                        if (contentBody.hasOwnProperty("items")) {
+                            const bodyItems = contentBody["items"];
+                            bodyItems.forEach(bodyItem => {
+                                if (bodyItem.hasOwnProperty("columns")) {
+                                    const columns = bodyItem["columns"];
+                                    columns.forEach(column => {
+                                        if (column.hasOwnProperty("items")) {
+                                            const colItems = column["items"];
+                                            const attributesToEdit = ["size", "weight", "color", "horizontalAlignment", "spacing"];
+                                            colItems.forEach(colItem => {
+                                                attributesToEdit.forEach(attr => {
+                                                    if (colItem.hasOwnProperty(attr)) {
+                                                        colItem[attr] = colItem[attr].charAt(0).toLowerCase() + colItem[attr].slice(1, colItem[attr].length);
+                                                    }
+                                                });
+                                            });
+                                        }
+                                    });
+                                }
+                            });
+                        }
+                    }
+                }
+            });
+        }
+    }
+}
+
+
 /** This is the main function - It iterates over all entries of the transcript, and applies all handlers on each entry **/
 function main(path) {
+    console.log("Started");
     let contentBuffer;
     try {
         contentBuffer = fs.readFileSync(path);
@@ -51,11 +121,15 @@ function main(path) {
         // Here we call to all the handlers we defined
         removeSchemaAttribute(currEntry);
         addSeparationAttribute(currEntry);
+        convertNumbersToString(currEntry);
+        convertColumnAttributesToCamelCase(currEntry);
+
     }
-    try{
+    try {
         const filename = path.replace(/^.*[\\\/]/, '').replace(/\.[^/.]+$/, ''); // Extracts filename without extension from full path.
         fs.writeFileSync(filename + '_transformed.transcript', JSON.stringify(jsonTranscript));
-    }catch (e){
+        console.log("Done");
+    } catch (e) {
         console.log("Cannot write file ", e);
     }
 }
