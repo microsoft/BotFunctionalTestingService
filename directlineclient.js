@@ -5,8 +5,8 @@ var utils = require("./utils.js");
 // config items
 var pollInterval = 300;
 
-var directLineStartConversationUrl = "https://directline.botframework.com/v3/directline/conversations";
-var directLineConversationUrlTemplate = "https://directline.botframework.com/v3/directline/conversations/{id}/activities";
+var directLineStartConversationUrl = `https://${ process.env["directlineDomain"] || "directline.botframework.com" }/v3/directline/conversations`;
+var directLineConversationUrlTemplate = `https://${ process.env["directlineDomain"] || "directline.botframework.com" }/v3/directline/conversations/{id}/activities`;
 
 DirectLineClient = function() {
     this.context = null;
