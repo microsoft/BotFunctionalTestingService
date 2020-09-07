@@ -166,7 +166,7 @@ function deepEqual(expected, actual) {
                 try {
                     deepEqual(expected[prop], actual[prop]);
                 } catch (error) {
-                    if (error === "1")
+                    if (error === "Attributes mismatch")
                         throw "Cards are not equal, Error in attribute '" + prop + "', expectedValue: " + JSON.stringify(expected[prop]) + ", actualValue: " + actual[prop];
                     throw error;
                 }
@@ -177,7 +177,7 @@ function deepEqual(expected, actual) {
         return true;
     }
     else {
-        throw "1";
+        throw "Attributes mismatch";
     }
 }
 
@@ -201,7 +201,7 @@ function compareMessages(context, userMessage, expectedReplies, actualMessages) 
             // Test using regex for text starting with regex keyword 
             if (expectedReply.text.startsWith("regex:")) {
                 const regex = new RegExp(expectedReply.text.replace("regex:", "").trim());
-                expect(regex.test(botReply.text), "Regex: "+regex.toString()+" doesn't match "+botReply.text).to.be.true;
+                expect(regex.test(botReply.text), "Regex: " + regex.toString() + " doesn't match: " + botReply.text).to.be.true;
             } else {
                 var expr = 'expect(botReply.text, "user message number ' + (i + 1) + ' ").' + assert + '(expectedReply.text)';
                 eval(expr);
