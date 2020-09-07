@@ -49,7 +49,7 @@ async function test(context, testData) {
             }
         }
         else {
-            reason = getTestTitle(testData) + ": " + err.message;                
+            reason = getTestTitle(testData) + ": " + err.message;
         }
         return new Result(false, reason, 500);
     }
@@ -79,7 +79,7 @@ function createConversationSteps(testData) {
 }
 
 function isUserMessage(testData, message) {
-    return (testData && testData.userId) ? (message.from.id == testData.userId) : (message.recipient ? (message.recipient.role == "bot") : (message.from.role != "bot")); 
+    return (testData && testData.userId) ? (message.from.id == testData.userId) : (message.recipient ? (message.recipient.role == "bot") : (message.from.role != "bot"));
 }
 
 function conversationStep(message) {
@@ -93,7 +93,7 @@ function testConversation(context, testUserId, conversationSteps, conversationId
     context.log("conversationSteps: " + utils.stringify(conversationSteps));
     context.log("conversationId: " + conversationId);
     context.log("defaultTimeout: " + defaultTimeout);
-    return new Promise(function(resolve, reject) {
+    return new Promise(function (resolve, reject) {
         var index = 0;
         function nextStep() {
             if (index < conversationSteps.length) {
@@ -105,7 +105,7 @@ function testConversation(context, testUserId, conversationSteps, conversationId
             }
             else {
                 context.log("testConversation end");
-                resolve({count: index});
+                resolve({ count: index });
             }
         }
         return nextStep();
@@ -128,16 +128,16 @@ function testStep(context, conversationId, userMessage, expectedReplies, timeout
     context.log("expectedReplies: " + utils.stringify(expectedReplies));
     context.log("timeoutMilliseconds: " + timeoutMilliseconds);
     return directline.sendMessage(conversationId, userMessage)
-        .then(function(response) {
+        .then(function (response) {
             var nMessages = expectedReplies.hasOwnProperty("length") ? expectedReplies.length : 1;
             var bUserMessageIncluded = response != null;
             return directline.pollMessages(conversationId, nMessages, bUserMessageIncluded, timeoutMilliseconds);
         })
-        .then(function(messages) {
+        .then(function (messages) {
             return compareMessages(context, userMessage, expectedReplies, messages);
         })
-        .catch(function(err) {
-            var message = `User message '${userMessage.text}' response failed - ${err.message}`;            
+        .catch(function (err) {
+            var message = `User message '${userMessage.text}' response failed - ${err.message}`;
             if (err.hasOwnProperty("details")) {
                 err.details.message = message;
             }
@@ -148,14 +148,47 @@ function testStep(context, conversationId, userMessage, expectedReplies, timeout
         });
 }
 
+// Replacement method for chai's deep.equal
+function deepEqual(expected, actual) {
+    // Test using regex for attributes starting with regex keyword 
+    if ((typeof expected === "string" && expected.startsWith("regex:"))) {
+        const regex = new RegExp(expected.replace("regex:", "").trim());
+        if (!regex.test(actual))
+            throw "Actual value doesn't match provided regex, Regex: " + regex.toString() + ", Actual: " + JSON.stringify(actual);
+        else return true;
+    }
+    // Regular test for other values
+    else if (expected === actual)
+        return true;
+    else if ((typeof expected === "object" && expected !== null) && (typeof actual === "object" && actual !== null)) {
+        for (var prop in expected) {
+            if (actual.hasOwnProperty(prop)) {
+                try {
+                    deepEqual(expected[prop], actual[prop]);
+                } catch (error) {
+                    if (error === "Attributes mismatch")
+                        throw "Cards are not equal, Error in attribute '" + prop + "', expectedValue: " + JSON.stringify(expected[prop]) + ", actualValue: " + actual[prop];
+                    throw error;
+                }
+            } else {
+                throw "Actual card is missing '" + prop + "' property";
+            }
+        }
+        return true;
+    }
+    else {
+        throw "Attributes mismatch";
+    }
+}
+
 function compareMessages(context, userMessage, expectedReplies, actualMessages) {
     context.log("compareMessages started");
     context.log("actualMessages: " + utils.stringify(actualMessages));
     // Filter out messages from the (test) user, leaving only bot replies
-    var botReplies = _.reject(actualMessages, 
-                              function(message) {
-                                  return message.from.id == userMessage.from.id;
-                              });
+    var botReplies = _.reject(actualMessages,
+        function (message) {
+            return message.from.id == userMessage.from.id;
+        });
 
     expect(botReplies, `reply to user message '${userMessage.text}'`).to.have.lengthOf(expectedReplies.length);
 
@@ -165,16 +198,22 @@ function compareMessages(context, userMessage, expectedReplies, actualMessages) 
         var botReply = botReplies[i];
 
         if (botReply.hasOwnProperty("text")) {
-            var expr = 'expect(botReply.text, "user message number ' + (i+1) + ' ").' + assert + '(expectedReply.text)';
-            eval(expr);
+            // Test using regex for text starting with regex keyword 
+            if (expectedReply.text.startsWith("regex:")) {
+                const regex = new RegExp(expectedReply.text.replace("regex:", "").trim());
+                expect(regex.test(botReply.text), "Regex: " + regex.toString() + " doesn't match: " + botReply.text).to.be.true;
+            } else {
+                var expr = 'expect(botReply.text, "user message number ' + (i + 1) + ' ").' + assert + '(expectedReply.text)';
+                eval(expr);
+            }
         }
         if (botReply.hasOwnProperty("attachments")) {
             try {
-                expect(botReply.attachments,`attachments of reply number ${i+1} to user message '${userMessage.text}'`).to.deep.equal(expectedReply.attachments);
+                expect(deepEqual(expectedReply.attachments, botReply.attachments)).to.be.true;
             }
             catch (err) {
-                var exception = new Error(err.message);
-                exception.details = {message: err.message, expected: err.expected, actual: err.actual, diff: diff(err.expected, err.actual)};
+                var exception = new Error(err);
+                exception.details = { message: err, expected: expectedReply.attachments, actual: botReply.attachments, diff: diff(expectedReply.attachments, botReply.attachments) };
                 throw exception;
             }
         }
@@ -183,7 +222,7 @@ function compareMessages(context, userMessage, expectedReplies, actualMessages) 
 }
 
 function getTestTitle(testData) {
-    return `Test ${testData.name? `'${testData.name}'` : `#${testData.index || 0}`}`;
+    return `Test ${testData.name ? `'${testData.name}'` : `#${testData.index || 0}`}`;
 }
 
 module.exports = Test;

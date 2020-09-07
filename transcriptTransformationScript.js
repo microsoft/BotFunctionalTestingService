@@ -7,16 +7,18 @@
  Bot Framework Emulator, and creates a new transformed transcript file named "'"transfromed.transcript"
  in the script directory.
  Transformation is done by applying all defined handlers on each entry of the transcript object.
-**/
+ **/
 
 const fs = require('fs');
 
 /** Here we can add all the handlers we need **/
 // Handler 1
-function removeSchemaAttribute(currEntry) {
-    if (currEntry['type'] === 'message') {
-        if (currEntry.hasOwnProperty("attachments") && currEntry["attachments"][0].hasOwnProperty("content") && currEntry["attachments"][0]["content"].hasOwnProperty("$schema")) {
-            delete currEntry["attachments"][0]["content"]["$schema"];
+function removeUnnecessaryAttributes(attachment, attributesToRemove) {
+    for (attr in attachment) {
+        if (typeof attachment[attr] === 'object') {
+            removeUnnecessaryAttributes(attachment[attr], attributesToRemove);
+        } else if (attributesToRemove.includes(attr)) {
+            delete attachment[attr];
         }
     }
 }
@@ -42,6 +44,7 @@ function convertColumnsWidthToString(items) {
         }
     }
 }
+
 // Handler 3
 function convertNumbersToString(currEntry) {
     if (currEntry['type'] === 'message') {
@@ -65,53 +68,37 @@ function convertNumbersToString(currEntry) {
     }
 }
 
+function convertAttachmentAttributesToCamelCase(attachment, unchangedAttributes) {
+    for (attr in attachment) {
+        if (typeof attachment[attr] === 'object') {
+            convertAttachmentAttributesToCamelCase(attachment[attr], unchangedAttributes);
+        } else if (typeof attachment[attr] === 'string' && !unchangedAttributes.includes(attr)) {
+            attachment[attr] = attachment[attr].charAt(0).toLowerCase() + attachment[attr].slice(1, attachment[attr].length);
+        }
+    }
+}
+
 // Handler 4
-function convertColumnAttributesToCamelCase(currEntry) {
+function editAttachmentsAttributes(currEntry) {
+    const attributesToRemove = ['horizontalAlignment', 'style', 'version', '$schema'];
+    const unchangedAttributes = ['placeholder', 'text', 'type', 'title', 'value', 'id', 'label', 'FoodChoice'];
     if (currEntry['type'] === 'message') {
         if (currEntry.hasOwnProperty("attachments")) {
             const attachments = currEntry["attachments"];
             attachments.forEach(attachment => {
-                if (attachment.hasOwnProperty("content")) {
-                    const content = attachment["content"];
-                    if (content.hasOwnProperty("body")) {
-                        const contentBody = content["body"][0];
-                        if (contentBody.hasOwnProperty("items")) {
-                            const bodyItems = contentBody["items"];
-                            bodyItems.forEach(bodyItem => {
-                                if (bodyItem.hasOwnProperty("columns")) {
-                                    const columns = bodyItem["columns"];
-                                    columns.forEach(column => {
-                                        if (column.hasOwnProperty("items")) {
-                                            const colItems = column["items"];
-                                            const attributesToEdit = ["size", "weight", "color", "horizontalAlignment", "spacing"];
-                                            colItems.forEach(colItem => {
-                                                attributesToEdit.forEach(attr => {
-                                                    if (colItem.hasOwnProperty(attr)) {
-                                                        colItem[attr] = colItem[attr].charAt(0).toLowerCase() + colItem[attr].slice(1, colItem[attr].length);
-                                                    }
-                                                });
-                                            });
-                                        }
-                                    });
-                                }
-                            });
-                        }
-                    }
-                }
+                removeUnnecessaryAttributes(attachment, attributesToRemove);
+                convertAttachmentAttributesToCamelCase(attachment, unchangedAttributes);
             });
         }
     }
 }
 
-
 /** This is the main function - It iterates over all entries of the transcript, and applies all handlers on each entry **/
 function main(path) {
-    console.log("Started");
     let contentBuffer;
     try {
         contentBuffer = fs.readFileSync(path);
-    }
-    catch (e) {
+    } catch (e) {
         console.log("Cannot open file", e.path);
         return;
     }
@@ -119,16 +106,13 @@ function main(path) {
     for (let i = 0; i < jsonTranscript.length; i++) {
         let currEntry = jsonTranscript[i];
         // Here we call to all the handlers we defined
-        removeSchemaAttribute(currEntry);
         addSeparationAttribute(currEntry);
         convertNumbersToString(currEntry);
-        convertColumnAttributesToCamelCase(currEntry);
-
+        editAttachmentsAttributes(currEntry);
     }
     try {
         const filename = path.replace(/^.*[\\\/]/, '').replace(/\.[^/.]+$/, ''); // Extracts filename without extension from full path.
         fs.writeFileSync(filename + '_transformed.transcript', JSON.stringify(jsonTranscript));
-        console.log("Done");
     } catch (e) {
         console.log("Cannot write file ", e);
     }

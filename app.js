@@ -5,7 +5,6 @@ var SuiteData = require("./suiteData.js");
 var Suite = require("./suite");
 var ResultsManager = require("./resultsManager");
 var config = require("./config.json");
-
 var restify = require("restify");
 
 const applicationinsights = require("applicationinsights");
