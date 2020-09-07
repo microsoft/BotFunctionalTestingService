@@ -154,7 +154,7 @@ function deepEqual(expected, actual) {
     if ((typeof expected === "string" && expected.startsWith("regex:"))) {
         const regex = new RegExp(expected.replace("regex:", "").trim());
         if (!regex.test(actual))
-            throw "Actual value doesn't match provided regex";
+            throw "Actual value doesn't match provided regex, Regex: " + regex.toString() + ", Actual: " + JSON.stringify(actual);
         else return true;
     }
     // Regular test for other values
@@ -164,8 +164,10 @@ function deepEqual(expected, actual) {
         for (var prop in expected) {
             if (actual.hasOwnProperty(prop)) {
                 try {
-                    deepEqual(expected[prop], actual[prop])
+                    deepEqual(expected[prop], actual[prop]);
                 } catch (error) {
+                    if (error === "1")
+                        throw "Cards are not equal, Error in attribute '" + prop + "', expectedValue: " + JSON.stringify(expected[prop]) + ", actualValue: " + actual[prop];
                     throw error;
                 }
             } else {
@@ -175,7 +177,7 @@ function deepEqual(expected, actual) {
         return true;
     }
     else {
-        throw "Cards are not equal";
+        throw "1";
     }
 }
 
@@ -207,11 +209,11 @@ function compareMessages(context, userMessage, expectedReplies, actualMessages) 
         }
         if (botReply.hasOwnProperty("attachments")) {
             try {
-                expect(deepEqual(expectedReply.attachments, botReply.attachments)).to.equals(true, "Attachments are not equal");
+                expect(deepEqual(expectedReply.attachments, botReply.attachments)).to.be.true;
             }
             catch (err) {
-                var exception = new Error(err.message);
-                exception.details = { message: err.message, expected: expectedReply.attachments, actual: botReply.attachments, diff: diff(expectedReply.attachments, botReply.attachments) };
+                var exception = new Error(err);
+                exception.details = { message: err, expected: expectedReply.attachments, actual: botReply.attachments, diff: diff(expectedReply.attachments, botReply.attachments) };
                 throw exception;
             }
         }
