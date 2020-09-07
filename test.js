@@ -198,10 +198,10 @@ function compareMessages(context, userMessage, expectedReplies, actualMessages) 
         var botReply = botReplies[i];
 
         if (botReply.hasOwnProperty("text")) {
-            // Can
+            // Test using regex for text starting with regex keyword 
             if (expectedReply.text.startsWith("regex:")) {
                 const regex = new RegExp(expectedReply.text.replace("regex:", "").trim());
-                expect(regex.test(botReply.text)).to.equals(true);
+                expect(regex.test(botReply.text), "Regex: "+regex.toString()+" doesn't match "+botReply.text).to.be.true;
             } else {
                 var expr = 'expect(botReply.text, "user message number ' + (i + 1) + ' ").' + assert + '(expectedReply.text)';
                 eval(expr);
