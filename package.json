@@ -18,6 +18,7 @@
     "applicationinsights": "^1.0.3",
     "chai": "^4.1.2",
     "deep-object-diff": "^1.0.4",
+    "dotenv": "^8.2.0",
     "request": "^2.83.0",
     "request-promise": "^4.2.2",
     "restify": "^8.4.0",

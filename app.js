@@ -1,3 +1,6 @@
+require("dotenv").config();
+
+const auth = require("./auth.js");
 var Context = require("./context.js");
 var TestData = require("./testData.js");
 var Test = require("./test");
@@ -24,6 +27,12 @@ const server = restify.createServer({
 server.use(restify.plugins.acceptParser(server.acceptable));
 server.use(restify.plugins.queryParser());
 server.use(restify.plugins.bodyParser());
+
+const requiredAuthToken = process.env.REQUIRED_AUTH_TOKEN;
+
+if (requiredAuthToken) {
+    server.use(auth(requiredAuthToken));
+}
 
 server.get("/test", handleRunTest);
 server.post("/test", handleRunTest);
