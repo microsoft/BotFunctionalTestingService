@@ -1,6 +1,7 @@
 var rp = require("request-promise");
 
 var utils = require("./utils.js");
+const logger = require("./logger");
 
 // config items
 var pollInterval = 300;
@@ -15,7 +16,7 @@ DirectLineClient = function() {
 }
 
 DirectLineClient.prototype.init = function(context, secret) {
-    context.log("init started");
+    logger.log("DirectLine - init started");
     var self = this;
     this.context = context;
     var headers = {
@@ -27,10 +28,10 @@ DirectLineClient.prototype.init = function(context, secret) {
         headers: headers,
         json: true
     };
-    console.log(`Init conversation request: ${JSON.stringify(startConversationOptions)}`);
+    logger.log(`Init conversation request: ${JSON.stringify(startConversationOptions)}`);
     var promise = rp(startConversationOptions)
         .then(function(response) {
-            context.log("init response: " + utils.stringify(response));
+            logger.log("init response: " + utils.stringify(response));
             self.watermark[response.conversationId] = null;
             self.headers[response.conversationId] = headers;
             return response;
@@ -39,9 +40,9 @@ DirectLineClient.prototype.init = function(context, secret) {
 }
 
 DirectLineClient.prototype.sendMessage = function(conversationId, message) {
-    this.context.log("sendMessage started");
-    this.context.log("conversationId: " + conversationId);
-    this.context.log("message: " + utils.stringify(message));
+    logger.log("sendMessage started");
+    logger.log("conversationId: " + conversationId);
+    logger.log("message: " + utils.stringify(message));
     var self = this;
     if (!conversationId) {
         throw new Error("DirectLineClient got invalid conversationId.");
@@ -57,15 +58,15 @@ DirectLineClient.prototype.sendMessage = function(conversationId, message) {
             json: true
         };
 
-        console.log(`Send message request: ${JSON.stringify(postMessageOptions)}`);
+        logger.log(`Send message request: ${JSON.stringify(postMessageOptions)}`);
         promise = rp(postMessageOptions)
             .then(function(response) {
-                self.context.log("sendMessage response: " + utils.stringify(response));
+                logger.log("sendMessage response: " + utils.stringify(response));
                 return response;
             });
     }
     else {
-        self.context.log("sendMessage: message is invalid, not sending.");
+        logger.log("sendMessage: message is invalid, not sending.");
         promise = Promise.resolve(null);
     }
 
@@ -73,11 +74,11 @@ DirectLineClient.prototype.sendMessage = function(conversationId, message) {
 }
 
 DirectLineClient.prototype.pollMessages = function(conversationId, nMessages, bUserMessageIncluded, maxTimeout) {
-    this.context.log("pollMessages started");
-    this.context.log("conversationId: " + conversationId);
-    this.context.log("nMessages: " + nMessages);
-    this.context.log("bUserMessageIncluded: " + bUserMessageIncluded);
-    this.context.log("maxTimeout: " + maxTimeout);
+    logger.log("pollMessages started");
+    logger.log("conversationId: " + conversationId);
+    logger.log("nMessages: " + nMessages);
+    logger.log("bUserMessageIncluded: " + bUserMessageIncluded);
+    logger.log("maxTimeout: " + maxTimeout);
     var self = this;
     if (!conversationId) {
         throw new Error("DirectLineClient got invalid conversationId.");
@@ -97,30 +98,30 @@ DirectLineClient.prototype.pollMessages = function(conversationId, nMessages, bU
     var promise = new Promise(function(resolve, reject) {
         var polling = function() {
             if (retries < maxRetries) {
-                console.log(`Poll messages request: ${JSON.stringify(getMessagesOptions)}`);
+                logger.log(`Poll messages request: ${JSON.stringify(getMessagesOptions)}`);
                 rp(getMessagesOptions)
                     .then(function(response) {
                         messages = response.activities;
-                        self.context.log(`Got ${messages.length} total activities (including user's response)`);
+                        logger.log(`Got ${messages.length} total activities (including user's response)`);
                         if (messages.length < nExpectedActivities) {
-                            self.context.log(`We have less than expected ${nExpectedActivities} activities - retry number ${retries + 1}...`);
+                            logger.log(`We have less than expected ${nExpectedActivities} activities - retry number ${retries + 1}...`);
                             retries++;
                             setTimeout(polling, pollInterval);                        
                         }
                         else {
                             self.watermark[conversationId] = response.watermark;
-                            self.context.log(`pollMessages messages: ${utils.stringify(messages)}`)
+                            logger.log(`pollMessages messages: ${utils.stringify(messages)}`)
                             resolve(messages);
                         }
                     })
                     .catch(function(err) {
-                        self.context.log("failed to get actitvities, retrying...");
+                        logger.log("failed to get actitvities, retrying...");
                         retries++;
                         setTimeout(polling, pollInterval);
                     });
             }
             else {
-                self.context.log(`pollMessages messages: ${utils.stringify(messages)}`)
+                logger.log(`pollMessages messages: ${utils.stringify(messages)}`)
                 reject(new Error(`Could not obtain ${nMessages} responses`));
             }
         }
