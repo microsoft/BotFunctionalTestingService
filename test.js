@@ -1,7 +1,6 @@
 var _ = require("underscore");
 var uuid = require("uuid");
 
-var assert = require("chai").assert;
 var expect = require("chai").expect;
 var diff = require("deep-object-diff").diff;
 
@@ -9,6 +8,7 @@ var directline = require("./directlineclient");
 var utils = require("./utils.js");
 
 var Result = require("./result");
+const logger = require("./logger");
 
 class Test {
     static async perform(context, testData) {
@@ -17,18 +17,22 @@ class Test {
 
     static async run(context, testData) {
         var testResult = await this.perform(context, testData);
+        const eventData = { test: testData.name, details: testResult.message };
+
         if (testResult.success) {
+            logger.event("TestSucceeded", eventData);
             context.success(testResult.message);
         }
         else {
+            logger.event("TestFailed", eventData);
             context.failure(testResult.code, testResult.message);
         }
     }
 }
 
 async function test(context, testData) {
-    context.log("test started");
-    context.log("testData: " + utils.stringify(testData));
+    logger.log("test started");
+    logger.log("testData: " + utils.stringify(testData));
     // Break the conversation into messages from the user side vs. replies from the bot side
     // Each conversation step contains an array of user messages (typically one) and an array of bot replies (typically one, but it's normal to have more than one)
     // For each conversation step, first send the user message and then wait for the expected reply
@@ -88,23 +92,23 @@ function conversationStep(message) {
 }
 
 function testConversation(context, testUserId, conversationSteps, conversationId, defaultTimeout) {
-    context.log("testConversation started");
-    context.log("testUserId: " + testUserId);
-    context.log("conversationSteps: " + utils.stringify(conversationSteps));
-    context.log("conversationId: " + conversationId);
-    context.log("defaultTimeout: " + defaultTimeout);
+    logger.log("testConversation started");
+    logger.log("testUserId: " + testUserId);
+    logger.log("conversationSteps: " + utils.stringify(conversationSteps));
+    logger.log("conversationId: " + conversationId);
+    logger.log("defaultTimeout: " + defaultTimeout);
     return new Promise(function(resolve, reject) {
         var index = 0;
         function nextStep() {
             if (index < conversationSteps.length) {
-                context.log("Testing conversation step " + index);
+                logger.log("Testing conversation step " + index);
                 var stepData = conversationSteps[index];
                 index++;
                 var userMessage = createUserMessage(stepData.userMessage, testUserId);
                 return testStep(context, conversationId, userMessage, stepData.botReplies, defaultTimeout).then(nextStep, reject);
             }
             else {
-                context.log("testConversation end");
+                logger.log("testConversation end");
                 resolve({count: index});
             }
         }
@@ -122,11 +126,11 @@ function createUserMessage(message, testUserId) {
 }
 
 function testStep(context, conversationId, userMessage, expectedReplies, timeoutMilliseconds) {
-    context.log("testStep started");
-    context.log("conversationId: " + conversationId);
-    context.log("userMessage: " + utils.stringify(userMessage));
-    context.log("expectedReplies: " + utils.stringify(expectedReplies));
-    context.log("timeoutMilliseconds: " + timeoutMilliseconds);
+    logger.log("testStep started");
+    logger.log("conversationId: " + conversationId);
+    logger.log("userMessage: " + utils.stringify(userMessage));
+    logger.log("expectedReplies: " + utils.stringify(expectedReplies));
+    logger.log("timeoutMilliseconds: " + timeoutMilliseconds);
     return directline.sendMessage(conversationId, userMessage)
         .then(function(response) {
             var nMessages = expectedReplies.hasOwnProperty("length") ? expectedReplies.length : 1;
@@ -149,8 +153,8 @@ function testStep(context, conversationId, userMessage, expectedReplies, timeout
 }
 
 function compareMessages(context, userMessage, expectedReplies, actualMessages) {
-    context.log("compareMessages started");
-    context.log("actualMessages: " + utils.stringify(actualMessages));
+    logger.log("compareMessages started");
+    logger.log("actualMessages: " + utils.stringify(actualMessages));
     // Filter out messages from the (test) user, leaving only bot replies
     var botReplies = _.reject(actualMessages, 
                               function(message) {
