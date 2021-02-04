@@ -1,3 +1,5 @@
+const logger = require("./logger.js");
+
 class Context {
     
     constructor(req, response) {
@@ -6,17 +8,13 @@ class Context {
         this.res = null;
     }
 
-    log(msg) {
-        console.log(msg);
-    }
-
     done() {
         this.response.setHeader("content-type", this.res.contentType);
         this.response.send(this.res.status, this.res.reason);
     }
 
     success(message) {
-        this.log("success: " + message);
+        logger.log("success: " + message);
         this.res = {
             status: 200,
             reason: message,
@@ -26,7 +24,7 @@ class Context {
     }
 
     failure(code, reason) {
-        this.log("failure: " + JSON.stringify(reason));
+        logger.log("failure: " + JSON.stringify(reason));
         this.res = {
             status: code,
             reason: reason,
