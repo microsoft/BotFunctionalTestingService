@@ -74,7 +74,7 @@ class TestData {
             testData = new TestData(response, {...defaults, ...obj});
         } else if (obj.hasOwnProperty("path") && obj.path) {
             const content = fs.readFileSync(obj.path);
-            response = await JSON.parse(content);
+            response = JSON.parse(content);
             testData = new TestData(response, {...defaults, ...obj});
         }
         else {
