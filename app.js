@@ -65,11 +65,12 @@ async function handleRunSuite(request, response, next) {
         var suiteData = await SuiteData.fromRequest(request);
         logger.log("Successfully got all tests from the request for runId " + runId);
     }
-    catch {
+    catch (err){
         response.setHeader("content-type", "application/json");
         response.send(400, {results: [], errorMessage:"Could not get tests data from request", verdict:"error"});
         ResultsManager.deleteSuiteResult(runId);
         logger.log("Could not get tests data from request for runId " + runId);
+        logger.log(err);
         return;
     }
     // Send a response with status code 202 and location header based on runId, and start the tests.
