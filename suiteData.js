@@ -2,6 +2,9 @@ var _ = require("underscore");
 
 var HTTP = require("./http");
 var TestData = require("./testData");
+var sanitize = require("sanitize-filename");
+const fs = require("fs");
+const path = require('path');
 
 
 class SuiteData {
@@ -12,8 +15,14 @@ class SuiteData {
             throw new Error("A suite 'name' parameter should be included on the query string or in the request body.");
         }
         var tests = obj && obj.tests;
+        if (_.isString(tests) && fs.existsSync(sanitize(tests))) {
+            const dirName = sanitize(tests);
+            tests = fs.readdirSync(dirName).filter(f => path.extname(f) === '.transcript').map(f => {
+                return {path: path.join(dirName, f)}
+            });
+        }
         if (!tests || !_.isArray(tests)) {
-            throw new Error("A suite must contain a 'tests' array.");
+            throw new Error("A suite must contain a 'tests' array or directory name containing *.transcript files.");
         }
         else if (tests.length == 0) {
             throw new Error("The suite 'tests' array must not be empty.");

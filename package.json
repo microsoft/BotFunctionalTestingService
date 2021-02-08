@@ -22,6 +22,7 @@
     "request": "^2.83.0",
     "request-promise": "^4.2.2",
     "restify": "^8.4.0",
+    "sanitize-filename": "^1.6.3",
     "underscore": "^1.8.3"
   }
 }
