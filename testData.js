@@ -6,6 +6,9 @@ var Transcript = require("./transcript");
 
 var config = require("./config.json");
 const fs = require("fs");
+const path = require('path');
+
+const readFile = require('util').promisify(fs.readFile);
 
 class TestData {
 
@@ -60,9 +63,11 @@ class TestData {
         if (testURL) {
             var response = await HTTP.getJSON(testURL);
             return new TestData(response, query);
-        }
-        else {
-            throw new Error("A 'url' parameter should be included on the query string.");
+        } else if (query.path) {
+            const content = await readFile(path.join(config.testsDir, query.path));
+            return new TestData(JSON.parse(content), query);
+        } else {
+            throw new Error("A 'url' or 'path' parameters should be included on the query string.");
         }
     }
 

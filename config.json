@@ -4,5 +4,6 @@
         "testSuiteResultsRetentionSeconds": 3600,
         "defaultBatchSize": 3,
         "defaultRoleName": "botFunctionalTestsService"
-    }
+    },
+    "testsDir": "tests"
 }
