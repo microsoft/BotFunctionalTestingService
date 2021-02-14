@@ -19,7 +19,7 @@ class SuiteData {
         }
         var tests = obj && obj.tests;
         if (!tests || !_.isArray(tests)) {
-            throw new Error("A suite must contain a 'tests' array or directory name containing *.transcript files.");
+            throw new Error("A suite must contain a 'tests' array.");
         }
         else if (tests.length == 0) {
             throw new Error("The suite 'tests' array must not be empty.");
@@ -44,7 +44,7 @@ class SuiteData {
                     if (await exists(testsDir)) {
                         request.body.tests = (await listDir(testsDir)).filter(f => path.extname(f) === '.transcript').map(f => ({path: path.join(testsDir, f)}));
                     } else {
-                        throw new Error("A suite must contain a 'tests' array or directory name containing *.transcript files.");
+                        throw new Error("Request must contain a 'tests' array or directory name containing *.transcript files.");
                     }
                 }
                 suiteData = new SuiteData(request.body, request.query);
