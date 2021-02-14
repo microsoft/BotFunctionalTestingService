@@ -39,15 +39,18 @@ class SuiteData {
                 break;
             case "POST":
                 let tests = request.body?.tests;
+                let suiteDataObj = request.body;
                 if (_.isString(tests)) {
                     const testsDir = path.join(config.testsDir, sanitize(tests));
                     if (await exists(testsDir)) {
-                        request.body.tests = (await listDir(testsDir)).filter(f => path.extname(f) === '.transcript').map(f => ({path: path.join(testsDir, f)}));
+                        suiteDataObj.tests = (await listDir(testsDir))
+                            .filter(fileName => path.extname(fileName) === '.transcript')
+                            .map(fileName => ({path: path.join(testsDir, fileName)}));
                     } else {
                         throw new Error("Request must contain a 'tests' array or directory name containing *.transcript files.");
                     }
                 }
-                suiteData = new SuiteData(request.body, request.query);
+                suiteData = new SuiteData(suiteDataObj, request.query);
                 break;
         }
         if (suiteData) {
