@@ -7,6 +7,7 @@ var Transcript = require("./transcript");
 var config = require("./config.json");
 const fs = require("fs");
 const path = require('path');
+const exists = require('util').promisify(fs.exists);
 
 const readFile = require('util').promisify(fs.readFile);
 
