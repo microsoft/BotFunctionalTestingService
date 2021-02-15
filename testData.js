@@ -5,11 +5,16 @@ var HTTP = require("./http");
 var Transcript = require("./transcript");
 
 var config = require("./config.json");
+const fs = require("fs");
+const path = require('path');
+const exists = require('util').promisify(fs.exists);
+
+const readFile = require('util').promisify(fs.readFile);
 
 class TestData {
 
     constructor(obj, query) {
-        this.name = (query && query.name) || (obj && obj.name) || (query && query.url.split('/').pop());
+        this.name = (query && query.name) || (obj && obj.name) || (query?.url?.split('/').pop()) || (query?.path?.split('/').pop());
         this.version = (query && query.version) || (obj && obj.version);
         this.timeout = (query && query.timeout) || (obj && obj.timeout) || config.defaults.timeoutMilliseconds;
         this.bot = (query && query.bot) || (obj && obj.bot) || process.env["DefaultBot"];
@@ -59,17 +64,26 @@ class TestData {
         if (testURL) {
             var response = await HTTP.getJSON(testURL);
             return new TestData(response, query);
-        }
-        else {
-            throw new Error("A 'url' parameter should be included on the query string.");
+        } else if (query.path) {
+            const fullTestPath = path.join(config.testsDir, query.path).normalize();
+            if (!(await exists(fullTestPath)) || !fullTestPath.startsWith(config.testsDir)) {
+                throw new Error("Test file invalid or not exists.");
+            }
+            const content = await readFile(fullTestPath);
+            return new TestData(JSON.parse(content), query);
+        } else {
+            throw new Error("A 'url' or 'path' parameters should be included on the query string.");
         }
     }
 
     static async fromObject(obj, defaults) {
         var testData = null;
         if (obj.hasOwnProperty("url") && obj.url) {
-            var response = await HTTP.getJSON(obj.url);
-            testData = new TestData(response, obj);
+            const response = await HTTP.getJSON(obj.url);
+            testData = new TestData(response, {...defaults, ...obj});
+        } else if (obj.hasOwnProperty("path") && obj.path) {
+            const content = fs.readFileSync(obj.path);
+            testData = new TestData(JSON.parse(content), {...defaults, ...obj});
         }
         else {
             testData = new TestData(obj, {});
