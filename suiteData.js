@@ -39,7 +39,7 @@ class SuiteData {
                 break;
             case "POST":
                 let tests = request.body?.tests;
-                let suiteDataObj = request.body;
+                let suiteDataObj = {...request.body};
                 if (_.isString(tests)) {
                     const testsDir = path.join(config.testsDir, sanitize(tests));
                     if (await exists(testsDir)) {
