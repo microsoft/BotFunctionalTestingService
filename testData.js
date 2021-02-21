@@ -44,7 +44,7 @@ class TestData {
     }
 
     static inheritedProperties() {
-        return ["version", "timeout", "bot", "userId"];
+        return ["version", "timeout", "bot", "userId", "botSecret"];
     }
 
     static async fromRequest(request) {
