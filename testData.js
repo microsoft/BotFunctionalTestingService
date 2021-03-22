@@ -21,6 +21,7 @@ class TestData {
         if (!this.bot) {
             throw new Error("Configuration error: No bot name was given as a query parameter nor as a test property and no DefaultBot in application settings.");
         }
+        this.secret = query?.botSecret || obj?.botSecret || this.getSecretFromEnvVar();
         if (!this.secret) {
             throw new Error(`Configuration error: BotSecret is missing for ${this.bot}.`);
         }
@@ -31,7 +32,7 @@ class TestData {
         }
     }
 
-    get secret() {
+    getSecretFromEnvVar() {
         var extractedSecret = null;
         try {
             extractedSecret = JSON.parse(process.env['SECRETS'])[this.bot];
@@ -43,7 +44,7 @@ class TestData {
     }
 
     static inheritedProperties() {
-        return ["version", "timeout", "bot", "userId"];
+        return ["version", "timeout", "bot", "userId", "botSecret"];
     }
 
     static async fromRequest(request) {
