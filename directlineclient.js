@@ -6,8 +6,8 @@ const logger = require("./logger");
 // config items
 var pollInterval = 300;
 
-var directLineStartConversationUrl = `https://${ process.env["directlineDomain"] || "directline.botframework.com" }/v3/directline/conversations`;
-var directLineConversationUrlTemplate = `https://${ process.env["directlineDomain"] || "directline.botframework.com" }/v3/directline/conversations/{id}/activities`;
+var directLineStartConversationUrl = `https://{directlineDomain}/v3/directline/conversations`;
+var directLineConversationUrlTemplate = `https://{directlineDomain}/v3/directline/conversations/{id}/activities`;
 
 DirectLineClient = function() {
     this.context = null;
@@ -15,16 +15,16 @@ DirectLineClient = function() {
     this.watermark = {};
 }
 
-DirectLineClient.prototype.init = function(context, secret) {
+DirectLineClient.prototype.init = function(context, testData) {
     logger.log("DirectLine - init started");
     var self = this;
     this.context = context;
     var headers = {
-        Authorization: "Bearer " + secret
+        Authorization: "Bearer " + testData.secret
     };
     var startConversationOptions = {
         method: "POST",
-        uri: directLineStartConversationUrl,
+        uri: getDirectLineStartConversationUrl(testData.customDirectlineDomain),
         headers: headers,
         json: true
     };
@@ -39,7 +39,7 @@ DirectLineClient.prototype.init = function(context, secret) {
     return promise;
 }
 
-DirectLineClient.prototype.sendMessage = function(conversationId, message) {
+DirectLineClient.prototype.sendMessage = function(conversationId, message, customDirectlineDomain) {
     logger.log("sendMessage started");
     logger.log("conversationId: " + conversationId);
     logger.log("message: " + utils.stringify(message));
@@ -52,7 +52,7 @@ DirectLineClient.prototype.sendMessage = function(conversationId, message) {
     if (isValidMessage(message)) {
         var postMessageOptions = {
             method: "POST",
-            uri: getConversationUrl(conversationId),
+            uri: getConversationUrl(conversationId, customDirectlineDomain),
             headers: self.headers[conversationId],
             body: message,
             json: true
@@ -73,7 +73,7 @@ DirectLineClient.prototype.sendMessage = function(conversationId, message) {
     return promise;
 }
 
-DirectLineClient.prototype.pollMessages = function(conversationId, nMessages, bUserMessageIncluded, maxTimeout) {
+DirectLineClient.prototype.pollMessages = function(conversationId, nMessages, bUserMessageIncluded, maxTimeout, customDirectlineDomain) {
     logger.log("pollMessages started");
     logger.log("conversationId: " + conversationId);
     logger.log("nMessages: " + nMessages);
@@ -86,7 +86,7 @@ DirectLineClient.prototype.pollMessages = function(conversationId, nMessages, bU
 
     var getMessagesOptions = {
         method: "GET",
-        uri: getConversationUrl(conversationId) + (this.watermark[conversationId] ? "?watermark=" + this.watermark[conversationId] : ""),
+        uri: getConversationUrl(conversationId, customDirectlineDomain) + (this.watermark[conversationId] ? "?watermark=" + this.watermark[conversationId] : ""),
         headers: self.headers[conversationId],
         json: true
     };
@@ -134,8 +134,12 @@ function isValidMessage(message) {
     return message && message.hasOwnProperty("type");
 }
 
-function getConversationUrl(conversationId) {
-    return directLineConversationUrlTemplate.replace("{id}", conversationId);
+function getConversationUrl(conversationId, customDirectlineDomain) {
+    return directLineConversationUrlTemplate.replace("{directlineDomain}", customDirectlineDomain || process.env["directlineDomain"] || "directline.botframework.com" ).replace("{id}", conversationId);
+}
+
+function getDirectLineStartConversationUrl(customDirectlineDomain) {
+    return directLineStartConversationUrl.replace("{directlineDomain}", customDirectlineDomain || process.env["directlineDomain"] || "directline.botframework.com" );
 }
 
 module.exports = new DirectLineClient();
