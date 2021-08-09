@@ -39,8 +39,8 @@ async function test(context, testData) {
     var testUserId = "test-user-" + uuid().substring(0, 8);
     var conversationSteps = createConversationSteps(testData);
     try {
-        var initResult = await directline.init(context, testData.secret);
-        var conversationResult = await testConversation(context, testUserId, conversationSteps, initResult.conversationId, testData.timeout);
+        var initResult = await directline.init(context, testData);
+        var conversationResult = await testConversation(context, testUserId, conversationSteps, initResult.conversationId, testData.timeout, testData.customDirectlineDomain);
         var message = `${getTestTitle(testData)} passed successfully (${conversationResult.count} ${conversationResult.count == 1 ? "step" : "steps"} passed)`;
         return new Result(true, message);
     }
@@ -91,7 +91,7 @@ function conversationStep(message) {
     this.botReplies = [];
 }
 
-function testConversation(context, testUserId, conversationSteps, conversationId, defaultTimeout) {
+function testConversation(context, testUserId, conversationSteps, conversationId, defaultTimeout, customDirectlineDomain) {
     logger.log("testConversation started");
     logger.log("testUserId: " + testUserId);
     logger.log("conversationSteps: " + utils.stringify(conversationSteps));
@@ -105,7 +105,7 @@ function testConversation(context, testUserId, conversationSteps, conversationId
                 var stepData = conversationSteps[index];
                 index++;
                 var userMessage = createUserMessage(stepData.userMessage, testUserId);
-                return testStep(context, conversationId, userMessage, stepData.botReplies, defaultTimeout).then(nextStep, reject);
+                return testStep(context, conversationId, userMessage, stepData.botReplies, defaultTimeout, customDirectlineDomain).then(nextStep, reject);
             }
             else {
                 logger.log("testConversation end");
@@ -125,17 +125,17 @@ function createUserMessage(message, testUserId) {
     return userMessage;
 }
 
-function testStep(context, conversationId, userMessage, expectedReplies, timeoutMilliseconds) {
+function testStep(context, conversationId, userMessage, expectedReplies, timeoutMilliseconds, customDirectlineDomain) {
     logger.log("testStep started");
     logger.log("conversationId: " + conversationId);
     logger.log("userMessage: " + utils.stringify(userMessage));
     logger.log("expectedReplies: " + utils.stringify(expectedReplies));
     logger.log("timeoutMilliseconds: " + timeoutMilliseconds);
-    return directline.sendMessage(conversationId, userMessage)
+    return directline.sendMessage(conversationId, userMessage, customDirectlineDomain)
         .then(function(response) {
             var nMessages = expectedReplies.hasOwnProperty("length") ? expectedReplies.length : 1;
             var bUserMessageIncluded = response != null;
-            return directline.pollMessages(conversationId, nMessages, bUserMessageIncluded, timeoutMilliseconds);
+            return directline.pollMessages(conversationId, nMessages, bUserMessageIncluded, timeoutMilliseconds, customDirectlineDomain);
         })
         .then(function(messages) {
             return compareMessages(context, userMessage, expectedReplies, messages);

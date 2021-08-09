@@ -22,6 +22,7 @@ class TestData {
             throw new Error("Configuration error: No bot name was given as a query parameter nor as a test property and no DefaultBot in application settings.");
         }
         this.secret = query?.botSecret || obj?.botSecret || this.getSecretFromEnvVar();
+        this.customDirectlineDomain = query?.customDirectlineDomain || obj?.customDirectlineDomain;
         if (!this.secret) {
             throw new Error(`Configuration error: BotSecret is missing for ${this.bot}.`);
         }
