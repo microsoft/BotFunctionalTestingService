@@ -15,7 +15,7 @@
   "author": "Arie Schwartzman + Gil Shacham",
   "license": "MIT",
   "dependencies": {
-    "applicationinsights": "^1.8.10",
+    "applicationinsights": "^2.1.8",
     "chai": "^4.3.4",
     "deep-object-diff": "^1.0.4",
     "dotenv": "^8.6.0",
