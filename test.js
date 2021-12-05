@@ -1,5 +1,5 @@
 var _ = require("underscore");
-var uuid = require("uuid");
+const crypto = require('crypto');
 
 var expect = require("chai").expect;
 var diff = require("deep-object-diff").diff;
@@ -36,7 +36,7 @@ async function test(context, testData) {
     // Break the conversation into messages from the user side vs. replies from the bot side
     // Each conversation step contains an array of user messages (typically one) and an array of bot replies (typically one, but it's normal to have more than one)
     // For each conversation step, first send the user message and then wait for the expected reply
-    var testUserId = "test-user-" + uuid().substring(0, 8);
+    var testUserId = "test-user-" + crypto.randomBytes(4).toString("hex");
     var conversationSteps = createConversationSteps(testData);
     try {
         var initResult = await directline.init(context, testData);
