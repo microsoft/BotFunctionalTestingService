@@ -3,6 +3,7 @@
         "timeoutMilliseconds": 5000,
         "testSuiteResultsRetentionSeconds": 3600,
         "defaultBatchSize": 3,
+        "failureTolerance": 1,
         "defaultRoleName": "botFunctionalTestsService"
     },
     "testsDir": "tests"

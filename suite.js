@@ -20,7 +20,15 @@ class Suite {
 
      async runTest(testData) {
         try {
-            const result = await Test.perform(this.context, testData);
+            let tolerance = parseInt(process.env["failureTolerance"]) ? parseInt(process.env["failureTolerance"]) : config.defaults.failureTolerance;
+            let result;
+            while (!result || tolerance > 0) {
+                result = await Test.perform(this.context, testData);
+                tolerance--;
+                if (result.success === true) {
+                    break;
+                }
+            }
             return result;
         }
         catch (err) {
