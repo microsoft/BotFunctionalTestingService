@@ -2,9 +2,15 @@ var rp = require("request-promise");
 
 var utils = require("./utils.js");
 const logger = require("./logger");
+const config = require("./config.json");
+const Test = require("./test");
+const Result = require("./result");
+// const {promisify} = require('util');
+// const sleep = promisify(setTimeout);
 
 // config items
 var pollInterval = 300;
+var initInterval = 500;
 
 var directLineStartConversationUrl = `https://{directlineDomain}/v3/directline/conversations`;
 var directLineConversationUrlTemplate = `https://{directlineDomain}/v3/directline/conversations/{id}/activities`;
@@ -15,7 +21,7 @@ DirectLineClient = function() {
     this.watermark = {};
 }
 
-DirectLineClient.prototype.init = function(context, testData) {
+DirectLineClient.prototype.init = async function(context, testData) {
     logger.log("DirectLine - init started");
     var self = this;
     this.context = context;
@@ -28,15 +34,63 @@ DirectLineClient.prototype.init = function(context, testData) {
         headers: headers,
         json: true
     };
+
+    let maxRetries = process.env.failureTolerance;   // number of tries given as an env variable
+
+    //new version:
     logger.log(`Init conversation request: ${JSON.stringify(startConversationOptions)}`);
-    var promise = rp(startConversationOptions)
-        .then(function(response) {
-            logger.log("init response: " + utils.stringify(response));
-            self.watermark[response.conversationId] = null;
-            self.headers[response.conversationId] = headers;
-            return response;
-        });
+    let result = false;
+    let message;
+    let promise;
+    let tolerance = parseInt(process.env.failureTolerance) ? parseInt(process.env.failureTolerance) : config.defaults.failureTolerance;
+    let iterNum = tolerance;
+    while (!result && (tolerance > 0)) {
+        await rp(startConversationOptions)
+            .then(function(response) {
+                message = utils.stringify(response)
+                logger.log("init response: " + message);
+                self.watermark[response.conversationId] = null;
+                self.headers[response.conversationId] = headers;
+                result = true;
+                return response;})
+            .catch(async ()=> {logger.log("failed to initialize, retrying...");
+                const sleep= time => {return new Promise(resolve => {setTimeout(resolve, time)})};
+                await sleep(initInterval).then(function (response){return;})});
+        tolerance--;
+        if (result === true) {
+            break;
+        }
+        if (tolerance === 0){
+            logger.log("failed initializing %d times",iterNum );
+        }
+    }
     return promise;
+
+    ////////
+    // var promise = new Promise(function(resolve, reject){
+    //     var initializing = function(){
+    //         if (retries < maxRetries){
+    //             logger.log(`Init conversation request: ${JSON.stringify(startConversationOptions)}`);
+    //             rp(startConversationOptions)
+    //                 .then(function(response) {
+    //                     logger.log("init response: " + utils.stringify(response));
+    //                     self.watermark[response.conversationId] = null;
+    //                     self.headers[response.conversationId] = headers;
+    //                     return response;
+    //                 })
+    //                 .catch(function (err){
+    //                     logger.log("failed to get initialize, retrying...");
+    //                     retries++;
+    //                     setTimeout(initializing, initInterval);
+    //                 });
+    //         }
+    //         else{
+    //             reject(new Error(`Failed to initialize ${maxRetries} times`));
+    //
+    //         }
+    //     }
+    // })
+    // return promise;
 }
 
 DirectLineClient.prototype.sendMessage = function(conversationId, message, customDirectlineDomain) {
