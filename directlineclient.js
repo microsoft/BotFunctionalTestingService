@@ -3,8 +3,6 @@ var rp = require("request-promise");
 var utils = require("./utils.js");
 const logger = require("./logger");
 const config = require("./config.json");
-const Test = require("./test");
-const Result = require("./result");
 
 // config items
 var pollInterval = 300;
