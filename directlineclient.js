@@ -32,8 +32,9 @@ DirectLineClient.prototype.init = async function(context, testData) {
         headers: headers,
         json: true
     };
-    //new version:
+
     logger.log(`Init conversation request: ${JSON.stringify(startConversationOptions)}`);
+    // retrying init:
     let result = false;
     let message;
     let promise;
