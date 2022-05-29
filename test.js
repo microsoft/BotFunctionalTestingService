@@ -52,7 +52,8 @@ async function test(context, testData) {
                     // if init failed:
                     success = false;
                     const sleep= time => {return new Promise(resolve => {setTimeout(resolve, time)})};
-                    await sleep(initInterval)});
+                    await sleep(initInterval)
+                });
             if (success){
                 break;
             }
