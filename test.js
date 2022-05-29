@@ -10,6 +10,8 @@ var utils = require("./utils.js");
 var Result = require("./result");
 const logger = require("./logger");
 
+const initInterval = 500;
+
 class Test {
     static async perform(context, testData) {
         return await test(context, testData);
@@ -39,7 +41,28 @@ async function test(context, testData) {
     var testUserId = "test-user-" + crypto.randomBytes(4).toString("hex");
     var conversationSteps = createConversationSteps(testData);
     try {
-        var initResult = await directline.init(context, testData);
+        // retrying initialization:
+        let success = false;
+        let initResult;
+        let tolerance = parseInt(process.env.failureTolerance) ? parseInt(process.env.failureTolerance) : config.defaults.failureTolerance;
+        for (let i = 1; i <= tolerance; i++) {
+            success = true;
+            initResult = await directline.init(context, testData)
+                .catch(async ()=> {
+                    // if init failed:
+                    success = false;
+                    const sleep= time => {return new Promise(resolve => {setTimeout(resolve, time)})};
+                    await sleep(initInterval)});
+            if (success){
+                break;
+            }
+            if (i === tolerance){
+                logger.log("failed initializing %d times",tolerance ); // after last init attempt
+            }
+            else{
+                logger.log("failed to initialize, retrying...");
+            }
+        }
         var conversationResult = await testConversation(context, testUserId, conversationSteps, initResult.conversationId, testData.timeout, testData.customDirectlineDomain);
         var message = `${getTestTitle(testData)} passed successfully (${conversationResult.count} ${conversationResult.count == 1 ? "step" : "steps"} passed)`;
         return new Result(true, message);

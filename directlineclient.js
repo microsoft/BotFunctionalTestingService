@@ -2,11 +2,9 @@ var rp = require("request-promise");
 
 var utils = require("./utils.js");
 const logger = require("./logger");
-const config = require("./config.json");
 
 // config items
 var pollInterval = 300;
-var initInterval = 500;
 
 var directLineStartConversationUrl = `https://{directlineDomain}/v3/directline/conversations`;
 var directLineConversationUrlTemplate = `https://{directlineDomain}/v3/directline/conversations/{id}/activities`;
@@ -17,7 +15,7 @@ DirectLineClient = function() {
     this.watermark = {};
 }
 
-DirectLineClient.prototype.init = async function(context, testData) {
+DirectLineClient.prototype.init = function(context, testData) {
     logger.log("DirectLine - init started");
     var self = this;
     this.context = context;
@@ -30,34 +28,14 @@ DirectLineClient.prototype.init = async function(context, testData) {
         headers: headers,
         json: true
     };
-
     logger.log(`Init conversation request: ${JSON.stringify(startConversationOptions)}`);
-    // retrying init:
-    let result = false;
-    let message;
-    let promise;
-    let tolerance = parseInt(process.env.failureTolerance) ? parseInt(process.env.failureTolerance) : config.defaults.failureTolerance;
-    let iterNum = tolerance;
-    while (!result && (tolerance > 0)) {
-        promise = await rp(startConversationOptions)
-            .then(function(response) {
-                message = utils.stringify(response)
-                logger.log("init response: " + message);
-                self.watermark[response.conversationId] = null;
-                self.headers[response.conversationId] = headers;
-                result = true;
-                return response;})
-            .catch(async ()=> {logger.log("failed to initialize, retrying...");
-                const sleep= time => {return new Promise(resolve => {setTimeout(resolve, time)})};
-                await sleep(initInterval).then(function (response){return;})});
-        tolerance--;
-        if (result === true) {
-            break;
-        }
-        if (tolerance === 0){
-            logger.log("failed initializing %d times",iterNum );
-        }
-    }
+    var promise = rp(startConversationOptions)
+        .then(function(response) {
+            logger.log("init response: " + utils.stringify(response));
+            self.watermark[response.conversationId] = null;
+            self.headers[response.conversationId] = headers;
+            return response;
+        });
     return promise;
 }
 
