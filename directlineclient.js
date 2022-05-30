@@ -90,7 +90,7 @@ DirectLineClient.prototype.pollMessages = function(conversationId, nMessages, bU
         headers: self.headers[conversationId],
         json: true
     };
-    
+
     var retries = 0;
     var maxRetries = (maxTimeout - 1) / pollInterval + 1;
     var messages;
@@ -106,7 +106,7 @@ DirectLineClient.prototype.pollMessages = function(conversationId, nMessages, bU
                         if (messages.length < nExpectedActivities) {
                             logger.log(`We have less than expected ${nExpectedActivities} activities - retry number ${retries + 1}...`);
                             retries++;
-                            setTimeout(polling, pollInterval);                        
+                            setTimeout(polling, pollInterval);
                         }
                         else {
                             self.watermark[conversationId] = response.watermark;
