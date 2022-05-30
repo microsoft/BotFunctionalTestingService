@@ -10,6 +10,8 @@ var utils = require("./utils.js");
 var Result = require("./result");
 const logger = require("./logger");
 
+var config = require("./config.json");
+
 const initInterval = 500;
 
 class Test {
