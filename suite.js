@@ -22,12 +22,9 @@ class Suite {
         try {
             let tolerance = parseInt(process.env["failureTolerance"]) ? parseInt(process.env["failureTolerance"]) : config.defaults.failureTolerance;
             let result;
-            while (!result || tolerance > 0) {
+            while (!(result && result.success === true) && tolerance > 0) {
                 result = await Test.perform(this.context, testData);
                 tolerance--;
-                if (result.success === true) {
-                    break;
-                }
             }
             return result;
         }
