@@ -21,11 +21,11 @@ class Test {
 
     static async run(context, testData) {
         var testResult = await this.perform(context, testData);
-        const eventData = { test: testData.name, details: testResult.message };
+        const eventData = { test: testData.name, details: testResult.message, conversationId: testResult.conversationId };
 
         if (testResult.success) {
             logger.event("TestSucceeded", eventData);
-            context.success(testResult.message);
+            context.success(testResult.message, testResult.conversationId);
         }
         else {
             logger.event("TestFailed", eventData);
@@ -44,31 +44,26 @@ async function test(context, testData) {
     var conversationSteps = createConversationSteps(testData);
     try {
         // retrying initialization:
-        let success = false;
         let initResult;
         let tolerance = parseInt(process.env.failureTolerance) ? parseInt(process.env.failureTolerance) : config.defaults.failureTolerance;
         for (let i = 1; i <= tolerance; i++) {
-            success = true;
-            initResult = await directline.init(context, testData)
-                .catch(async ()=> {
-                    // if init failed:
-                    success = false;
-                    const sleep= time => {return new Promise(resolve => {setTimeout(resolve, time)})};
-                    await sleep(initInterval)
-                });
-            if (success){
+            try {
+                initResult = await directline.init(context, testData);
                 break;
-            }
-            if (i === tolerance){
-                logger.log("failed initializing %d times",tolerance ); // after last init attempt
-            }
-            else{
-                logger.log("failed to initialize, retrying...");
+            } catch (err) {
+                if (i === tolerance){
+                    logger.log("failed initializing %d times",tolerance ); // after last init attempt
+                    throw err;
+                }
+                else{
+                    logger.log(`failed to initialize, retrying in ${initInterval / 1000} seconds...`);
+                    await new Promise((resolve) => setTimeout(resolve, initInterval));
+                }
             }
         }
         var conversationResult = await testConversation(context, testUserId, conversationSteps, initResult.conversationId, testData.timeout, testData.customDirectlineDomain);
         var message = `${getTestTitle(testData)} passed successfully (${conversationResult.count} ${conversationResult.count == 1 ? "step" : "steps"} passed)`;
-        return new Result(true, message);
+        return new Result({ success: true, message, conversationId: initResult.conversationId });
     }
     catch (err) {
         var reason;
@@ -81,7 +76,7 @@ async function test(context, testData) {
         else {
             reason = getTestTitle(testData) + ": " + err.message;                
         }
-        return new Result(false, reason, 500);
+        return new Result({ success: false, message: reason, code: 500 });
     }
 }
 

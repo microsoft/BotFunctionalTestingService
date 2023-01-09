@@ -29,20 +29,19 @@ class Suite {
             return result;
         }
         catch (err) {
-            return new Result(false, err.message, 400);
+            return new Result({ success: false, message: err.message, code: 400 });
         }
     }
 
     summarizeTestsResults() {
         const success = _.every(this.results, (result) => result && result.success);
-        const messages = _.pluck(this.results, "message");
         if (success) {
-            logger.event("TestSuiteSucceeded", { suite: this.suiteData.name, details: messages });
-            ResultsManager.updateSuiteResults(this.runId, messages, "", "success");
+            logger.event("TestSuiteSucceeded", { suite: this.suiteData.name, details: this.results });
+            ResultsManager.updateSuiteResults(this.runId, this.results, "", "success");
         }
         else {
-            logger.event("TestSuiteFailed", { suite: this.suiteData.name, details: messages });
-            ResultsManager.updateSuiteResults(this.runId, messages, "", "failure");
+            logger.event("TestSuiteFailed", { suite: this.suiteData.name, details: this.results });
+            ResultsManager.updateSuiteResults(this.runId, this.results, "", "failure");
         }
     }
 
