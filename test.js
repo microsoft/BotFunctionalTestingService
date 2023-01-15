@@ -25,7 +25,7 @@ class Test {
 
         if (testResult.success) {
             logger.event("TestSucceeded", eventData);
-            context.success(testResult.message, testResult.conversationId);
+            context.success(testResult);
         }
         else {
             logger.event("TestFailed", eventData);

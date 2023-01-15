@@ -5,34 +5,21 @@ class Context {
     constructor(req, response) {
         this.request = req;
         this.response = response;
-        this.res = null;
     }
 
-    done() {
+    done(status, body) {
         this.response.setHeader("content-type", "application/json");
-        this.response.send(this.res.status, this.res.conversationId ? {
-            message: this.res.reason,
-            conversationId: this.res.conversationId
-        } : this.res.reason);
+        this.response.send(status, body);
     }
 
-    success(message, conversationId) {
+    success({ message, conversationId }) {
         logger.log("success: " + message);
-        this.res = {
-            status: 200,
-            reason: message,
-            conversationId
-        };
-        this.done();
+        this.done(200, this.request.query.includeConversationId ? { message, conversationId } : message);
     }
 
     failure(code, reason) {
         logger.log("failure: " + JSON.stringify(reason));
-        this.res = {
-            status: code,
-            reason: reason,
-        };
-        this.done();
+        this.done(code, reason);
     }
 }
 

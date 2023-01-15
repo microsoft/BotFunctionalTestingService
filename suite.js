@@ -35,13 +35,17 @@ class Suite {
 
     summarizeTestsResults() {
         const success = _.every(this.results, (result) => result && result.success);
+        const details = this.context.request.query.includeConversationId || this.context.request.body.includeConversationId ?
+            this.results :
+            _.pluck(this.results, "message");
+        
         if (success) {
-            logger.event("TestSuiteSucceeded", { suite: this.suiteData.name, details: this.results });
-            ResultsManager.updateSuiteResults(this.runId, this.results, "", "success");
+            logger.event("TestSuiteSucceeded", { suite: this.suiteData.name, details });
+            ResultsManager.updateSuiteResults(this.runId, details, "", "success");
         }
         else {
-            logger.event("TestSuiteFailed", { suite: this.suiteData.name, details: this.results });
-            ResultsManager.updateSuiteResults(this.runId, this.results, "", "failure");
+            logger.event("TestSuiteFailed", { suite: this.suiteData.name, details });
+            ResultsManager.updateSuiteResults(this.runId, details, "", "failure");
         }
     }
 
