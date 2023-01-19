@@ -12,8 +12,23 @@ const exists = require('util').promisify(fs.exists);
 const readFile = require('util').promisify(fs.readFile);
 
 const retry_amount = 3;
-const sleep = (ms)  => {
-    return new Promise(resolve => setTimeout(resolve, ms));
+const sleep = require('util').promisify(setTimeout);
+
+const retry_from_file = async (path) => {
+    for (let retry_count = 0; retry_count < retry_amount; retry_count++) {
+        if (retry_count > 0) {
+            await sleep(retry_count*1000);
+        }
+        try {
+            const content = fs.readFileSync(path);
+            return content;
+        }
+        catch (err) {
+            if (retry_count === retry_amount - 1) {
+                console.error(err);
+            }
+        }
+    }
 }
 
 
@@ -77,16 +92,8 @@ class TestData {
             if (!(await exists(fullTestPath)) || !fullTestPath.startsWith(config.testsDir)) {
                 throw new Error("Test file invalid or not exists.");
             }
-            for (let retry_count = 0; retry_count < retry_amount; retry_count++) {
-                await sleep(retry_amount*1000)
-                try {
-                    const content = await readFile(fullTestPath);
-                    return new TestData(JSON.parse(content), query);
-                }
-                catch (err) {
-                    if (retry_count === retry_amount - 1) console.error(err);
-                }
-            }
+            const content = await retry_from_file(fullTestPath);
+            return TestData(JSON.parse(content), query);
         } else {
             throw new Error("A 'url' or 'path' parameters should be included on the query string.");
         }
@@ -96,28 +103,23 @@ class TestData {
         var testData = null;
         if (obj.hasOwnProperty("url") && obj.url) {
             for (let retry_count = 0; retry_count < retry_amount; retry_count++) {
-                await sleep(retry_amount*1000)
+                if (retry_count > 0) {
+                    await sleep(retry_count*1000)
+                }
                 try {
                     const response = await HTTP.getJSON(obj.url);
                     testData = new TestData(response, {...defaults, ...obj});
                     break;
                 }
                 catch (err) {
-                    if (retry_count === retry_amount - 1) console.error(err);
+                    if (retry_count === retry_amount - 1){
+                        console.error(err);
+                    }
                 }
             }
         } else if (obj.hasOwnProperty("path") && obj.path) {
-            for (let retry_count = 0; retry_count < retry_amount; retry_count++) {
-                await sleep(retry_amount*1000)
-                try {
-                    const content = fs.readFileSync(obj.path);
-                    testData = new TestData(JSON.parse(content), {...defaults, ...obj});
-                    break;
-                }
-                catch (err) {
-                    if (retry_count === retry_amount - 1) console.error(err);
-                }
-            }
+            const content = await retry_from_file(obj.path);
+            testData = new TestData(JSON.parse(content), {...defaults, ...obj});
         }
         else {
             testData = new TestData(obj, {});
