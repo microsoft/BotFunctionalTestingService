@@ -14,13 +14,13 @@ const readFile = require('util').promisify(fs.readFile);
 const retry_amount = 3;
 const sleep = require('util').promisify(setTimeout);
 
-const retry_from_file = async (path) => {
+const executeWithRetries = async (source, func) => {
     for (let retry_count = 0; retry_count < retry_amount; retry_count++) {
         if (retry_count > 0) {
             await sleep(retry_count*1000);
         }
         try {
-            const content = fs.readFileSync(path);
+            const content = await func(source);
             return content;
         }
         catch (err) {
@@ -92,7 +92,7 @@ class TestData {
             if (!(await exists(fullTestPath)) || !fullTestPath.startsWith(config.testsDir)) {
                 throw new Error("Test file invalid or not exists.");
             }
-            const content = await retry_from_file(fullTestPath);
+            const content = await executeWithRetries(fullTestPath, fs.readFile);
             return TestData(JSON.parse(content), query);
         } else {
             throw new Error("A 'url' or 'path' parameters should be included on the query string.");
@@ -102,23 +102,10 @@ class TestData {
     static async fromObject(obj, defaults) {
         var testData = null;
         if (obj.hasOwnProperty("url") && obj.url) {
-            for (let retry_count = 0; retry_count < retry_amount; retry_count++) {
-                if (retry_count > 0) {
-                    await sleep(retry_count*1000)
-                }
-                try {
-                    const response = await HTTP.getJSON(obj.url);
-                    testData = new TestData(response, {...defaults, ...obj});
-                    break;
-                }
-                catch (err) {
-                    if (retry_count === retry_amount - 1){
-                        console.error(err);
-                    }
-                }
-            }
+            const content = await executeWithRetries(obj.url, HTTP.getJSON);
+            testData = new TestData(content, {...defaults, ...obj});
         } else if (obj.hasOwnProperty("path") && obj.path) {
-            const content = await retry_from_file(obj.path);
+            const content = await executeWithRetries(obj.path, fs.readFile);
             testData = new TestData(JSON.parse(content), {...defaults, ...obj});
         }
         else {
