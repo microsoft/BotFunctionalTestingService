@@ -92,7 +92,7 @@ class TestData {
             if (!(await exists(fullTestPath)) || !fullTestPath.startsWith(config.testsDir)) {
                 throw new Error("Test file invalid or not exists.");
             }
-            const content = await executeWithRetries(fullTestPath, fs.readFile);
+            const content = await executeWithRetries(fullTestPath, readFile);
             return TestData(JSON.parse(content), query);
         } else {
             throw new Error("A 'url' or 'path' parameters should be included on the query string.");
@@ -105,7 +105,7 @@ class TestData {
             const content = await executeWithRetries(obj.url, HTTP.getJSON);
             testData = new TestData(content, {...defaults, ...obj});
         } else if (obj.hasOwnProperty("path") && obj.path) {
-            const content = await executeWithRetries(obj.path, fs.readFile);
+            const content = await executeWithRetries(obj.path, readFile);
             testData = new TestData(JSON.parse(content), {...defaults, ...obj});
         }
         else {
