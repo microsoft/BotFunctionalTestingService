@@ -14,13 +14,13 @@ const readFile = require('util').promisify(fs.readFile);
 const retry_amount = 3;
 const sleep = require('util').promisify(setTimeout);
 
-const executeWithRetries = async (source, func) => {
+const executeWithRetries = async (func, ...args) => {
     for (let retry_count = 0; retry_count < retry_amount; retry_count++) {
         if (retry_count > 0) {
             await sleep(retry_count*1000);
         }
         try {
-            const content = await func(source);
+            const content = await func(...args);
             return content;
         }
         catch (err) {
@@ -92,8 +92,8 @@ class TestData {
             if (!(await exists(fullTestPath)) || !fullTestPath.startsWith(config.testsDir)) {
                 throw new Error("Test file invalid or not exists.");
             }
-            const content = await executeWithRetries(fullTestPath, readFile);
-            return TestData(JSON.parse(content), query);
+            const content = await executeWithRetries(readFile, fullTestPath);
+            return new TestData(JSON.parse(content), query);
         } else {
             throw new Error("A 'url' or 'path' parameters should be included on the query string.");
         }
@@ -102,10 +102,10 @@ class TestData {
     static async fromObject(obj, defaults) {
         var testData = null;
         if (obj.hasOwnProperty("url") && obj.url) {
-            const content = await executeWithRetries(obj.url, HTTP.getJSON);
+            const content = await executeWithRetries(HTTP.getJSON, obj.url);
             testData = new TestData(content, {...defaults, ...obj});
         } else if (obj.hasOwnProperty("path") && obj.path) {
-            const content = await executeWithRetries(obj.path, readFile);
+            const content = await executeWithRetries(readFile, obj.path);
             testData = new TestData(JSON.parse(content), {...defaults, ...obj});
         }
         else {
