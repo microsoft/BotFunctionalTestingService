@@ -21,7 +21,7 @@
     "dotenv": "^8.6.0",
     "request": "^2.88.2",
     "request-promise": "^4.2.6",
-    "restify": "^8.5.1",
+    "restify": "^11.1.0",
     "sanitize-filename": "^1.6.3",
     "underscore": "^1.13.1"
   }
