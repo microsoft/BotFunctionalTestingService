@@ -9,21 +9,17 @@ var Suite = require("./suite");
 var ResultsManager = require("./resultsManager");
 var config = require("./config.json");
 
-var restify = require("restify");
-
+const express = require("express");
+const bodyParser = require("body-parser");
 const logger = require("./logger.js");
 
 logger.log("Server initialized");
+const server = express();
 
-
-const server = restify.createServer({
-    name: "BotFunctionalTestingService",
-    version: "1.0.0"
-});
-
-server.use(restify.plugins.acceptParser(server.acceptable));
-server.use(restify.plugins.queryParser());
-server.use(restify.plugins.bodyParser());
+server.use(bodyParser.json({limit: '5mb'}));
+// server.use(restify.plugins.acceptParser(server.acceptable));
+// server.use(restify.plugins.queryParser());
+// server.use(restify.plugins.bodyParser());
 
 const requiredAuthToken = process.env.REQUIRED_AUTH_TOKEN;
 
@@ -37,14 +33,14 @@ server.get("/suite", handleRunSuite);
 server.post("/suite", handleRunSuite);
 server.get("/getResults/:runId", handleGetTestResults);
 
-server.listen(process.env.PORT || 3000, function () {
-    logger.log("Server started listening");
-    logger.log("%s listening at %s", server.name, server.url);
+const port = process.env.PORT || 3000;
+server.listen(port, function () {
+    logger.log(`Express server listening on port ${port}`);
 });
 
 async function handleRunTest(request, response, next) {
     const context = new Context(request, response);
-    logger.log(`${server.name} processing a test ${request.method} request.`);
+    logger.log(`processing a test ${request.method} request.`);
 
     try {
         const testData = await TestData.fromRequest(request);
@@ -57,7 +53,7 @@ async function handleRunTest(request, response, next) {
 
 async function handleRunSuite(request, response, next) {
     const context = new Context(request, response);
-    logger.log(`${server.name} processing a suite ${request.method} request.`);
+    logger.log(`processing a suite ${request.method} request.`);
     const runId = ResultsManager.getFreshRunId();
     logger.log("Started suite run with runIn " + runId);
     // Get the suite data from the request.
