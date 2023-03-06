@@ -9,7 +9,7 @@ class Context {
 
     done(status, body) {
         this.response.setHeader("content-type", "application/json");
-        this.response.send(status, body);
+        this.response.status(status).send(body);
     }
 
     success({ message, conversationId }) {

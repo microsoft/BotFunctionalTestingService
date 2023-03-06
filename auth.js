@@ -8,7 +8,7 @@ function auth(token) {
         }
 
         res.setHeader("content-type", "text/plain");
-        res.send(401, "Unauthorized.");
+        res.status(401).send("Unauthorized.");
     };
 }
 

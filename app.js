@@ -60,7 +60,7 @@ async function handleRunSuite(request, response, next) {
     }
     catch (err){
         response.setHeader("content-type", "application/json");
-        response.send(400, {results: [], errorMessage:"Could not get tests data from request", verdict:"error"});
+        response.status(400).send({results: [], errorMessage:"Could not get tests data from request", verdict:"error"});
         ResultsManager.deleteSuiteResult(runId);
         logger.log("Could not get tests data from request for runId " + runId);
         logger.log(err);
@@ -69,7 +69,7 @@ async function handleRunSuite(request, response, next) {
     // Send a response with status code 202 and location header based on runId, and start the tests.
     response.setHeader("content-type", "application/json");
     response.setHeader("Location", "http://" + request.headers.host + "/getResults/" + runId);
-    response.send(202, "Tests are running.");
+    response.status(202).send("Tests are running.");
     let testSuite = new Suite(context, runId, suiteData);
     try {
         await testSuite.run();
@@ -90,7 +90,7 @@ async function handleGetTestResults(request, response, next) {
     const activeRunIds = ResultsManager.getActiveRunIds();
     if (!activeRunIds.has(runId)) { // If runId doesn't exist (either deleted or never existed)
         response.setHeader("content-type", "application/json");
-        response.send(404, {results: [], errorMessage:"RunId does not exist.", verdict:"error"});
+        response.status(404).send({results: [], errorMessage:"RunId does not exist.", verdict:"error"});
         return;
     }
     // Else, runId exists.
@@ -99,15 +99,15 @@ async function handleGetTestResults(request, response, next) {
         response.setHeader("content-type", "application/json");
         response.setHeader("Location", "http://" + request.headers.host + "/getResults/" + runId);
         response.setHeader("Retry-After", 10);
-        response.send(202, "Tests are still running.");
+        response.status(202).send("Tests are still running.");
     }
     else { // Results are ready
         response.setHeader("content-type", "application/json");
         if (resultsObject["verdict"] === "success" || resultsObject["verdict"] === "failure") { // If tests finished without errors, send response with status code 200.
-            response.send(200, resultsObject);
+            response.status(200).send(resultsObject);
         }
         else if (resultsObject["verdict"] === "error") { // If there was an error while running the tests, send response with status code 500
-            response.send(500, resultsObject);
+            response.status(500).send(resultsObject);
             ResultsManager.deleteSuiteResult(runId); // In case of an error while running test suite, delete suite results once user knows about it.
         }
     }
