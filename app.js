@@ -17,9 +17,6 @@ logger.log("Server initialized");
 const server = express();
 
 server.use(bodyParser.json({limit: '5mb'}));
-// server.use(restify.plugins.acceptParser(server.acceptable));
-// server.use(restify.plugins.queryParser());
-// server.use(restify.plugins.bodyParser());
 
 const requiredAuthToken = process.env.REQUIRED_AUTH_TOKEN;
 
