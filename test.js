@@ -56,7 +56,7 @@ async function test(context, testData) {
                     throw err;
                 }
                 else{
-                    logger.log(`failed to initialize, retrying in ${initInterval / 1000} seconds...`);
+                    logger.log(`failed to initialize user ID ${testUserId} on retry number ${i}, retrying in ${initInterval / 1000} seconds...`);
                     await new Promise((resolve) => setTimeout(resolve, initInterval));
                 }
             }
