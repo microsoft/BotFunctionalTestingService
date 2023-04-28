@@ -36,7 +36,6 @@ class Test {
 
 async function test(context, testData) {
     logger.log("test started");
-    logger.log("testData: " + utils.stringify(testData));
     // Break the conversation into messages from the user side vs. replies from the bot side
     // Each conversation step contains an array of user messages (typically one) and an array of bot replies (typically one, but it's normal to have more than one)
     // For each conversation step, first send the user message and then wait for the expected reply
@@ -52,6 +51,7 @@ async function test(context, testData) {
                 break;
             } catch (err) {
                 if (i === tolerance){
+                    logger.log("testData: " + utils.stringify(testData));
                     logger.log("failed initializing %d times",tolerance ); // after last init attempt
                     throw err;
                 }
