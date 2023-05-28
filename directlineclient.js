@@ -116,7 +116,7 @@ DirectLineClient.prototype.pollMessages = function(conversationId, nMessages, bU
                     })
                     .catch(function(err) {
                         logger.log(`failed to get activities for on retry number ${retries + 1}. retrying...`);
-                        logger.log("Error: ", err);
+                        logger.log(err);
                         retries++;
                         setTimeout(polling, pollInterval);
                     });
