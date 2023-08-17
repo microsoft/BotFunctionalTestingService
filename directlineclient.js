@@ -52,7 +52,7 @@ DirectLineClient.prototype.sendMessage = function(conversationId, message, custo
             method: "POST",
             url: getConversationUrl(conversationId, customDirectlineDomain),
             headers: self.headers[conversationId],
-            body: message
+            data: message
         };
 
         logger.log(`Send message request: ${JSON.stringify(postMessageOptions)}`);
