@@ -16,13 +16,12 @@
   "license": "MIT",
   "dependencies": {
     "applicationinsights": "^2.1.8",
+    "axios": "^1.4.0",
     "body-parser": "^1.20.2",
     "chai": "^4.3.4",
     "deep-object-diff": "^1.0.4",
     "dotenv": "^8.6.0",
     "express": "^4.18.2",
-    "request": "^2.88.2",
-    "request-promise": "^4.2.6",
     "sanitize-filename": "^1.6.3",
     "underscore": "^1.13.1"
   }

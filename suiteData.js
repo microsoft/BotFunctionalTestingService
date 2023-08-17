@@ -1,6 +1,5 @@
 var _ = require("underscore");
 
-var HTTP = require("./http");
 var TestData = require("./testData");
 var sanitize = require("sanitize-filename");
 const fs = require("fs");
@@ -9,7 +8,7 @@ var config = require("./config.json");
 
 const exists = require('util').promisify(fs.exists);
 const listDir = require('util').promisify(fs.readdir);
-
+const axios = require("axios");
 class SuiteData {
     
     constructor(obj, query) {
@@ -62,8 +61,8 @@ class SuiteData {
     static async getSuiteData(query) {
         var suiteURL = query.url;
         if (suiteURL) {
-            var response = await HTTP.getJSON(suiteURL);
-            return new SuiteData(response, query);
+            const { data } = axios.get(suiteURL);
+            return new SuiteData(data, query);
         }
         else {
             throw new Error("A 'url' parameter should be included on the query string.");
