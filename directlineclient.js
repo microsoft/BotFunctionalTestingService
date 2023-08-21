@@ -1,5 +1,4 @@
-var rp = require("request-promise");
-
+const axios = require("axios");
 var utils = require("./utils.js");
 const logger = require("./logger");
 
@@ -24,17 +23,16 @@ DirectLineClient.prototype.init = function(context, testData) {
     };
     var startConversationOptions = {
         method: "POST",
-        uri: getDirectLineStartConversationUrl(testData.customDirectlineDomain),
-        headers: headers,
-        json: true
+        url: getDirectLineStartConversationUrl(testData.customDirectlineDomain),
+        headers: headers
     };
     logger.log(`Init conversation request: ${JSON.stringify(startConversationOptions)}`);
-    var promise = rp(startConversationOptions)
-        .then(function(response) {
-            logger.log("init response: " + utils.stringify(response));
-            self.watermark[response.conversationId] = null;
-            self.headers[response.conversationId] = headers;
-            return response;
+    var promise = axios.request(startConversationOptions)
+        .then(function({ data }) {
+            logger.log("init response: " + utils.stringify(data));
+            self.watermark[data.conversationId] = null;
+            self.headers[data.conversationId] = headers;
+            return data;
         });
     return promise;
 }
@@ -52,17 +50,16 @@ DirectLineClient.prototype.sendMessage = function(conversationId, message, custo
     if (isValidMessage(message)) {
         var postMessageOptions = {
             method: "POST",
-            uri: getConversationUrl(conversationId, customDirectlineDomain),
+            url: getConversationUrl(conversationId, customDirectlineDomain),
             headers: self.headers[conversationId],
-            body: message,
-            json: true
+            data: message
         };
 
         logger.log(`Send message request: ${JSON.stringify(postMessageOptions)}`);
-        promise = rp(postMessageOptions)
-            .then(function(response) {
-                logger.log("sendMessage response: " + utils.stringify(response));
-                return response;
+        promise = axios.request(postMessageOptions)
+            .then(function({ data }) {
+                logger.log("sendMessage response: " + utils.stringify(data));
+                return data;
             });
     }
     else {
@@ -86,9 +83,8 @@ DirectLineClient.prototype.pollMessages = function(conversationId, nMessages, bU
 
     var getMessagesOptions = {
         method: "GET",
-        uri: getConversationUrl(conversationId, customDirectlineDomain) + (this.watermark[conversationId] ? "?watermark=" + this.watermark[conversationId] : ""),
-        headers: self.headers[conversationId],
-        json: true
+        url: getConversationUrl(conversationId, customDirectlineDomain) + (this.watermark[conversationId] ? "?watermark=" + this.watermark[conversationId] : ""),
+        headers: self.headers[conversationId]
     };
 
     var retries = 0;
@@ -99,9 +95,9 @@ DirectLineClient.prototype.pollMessages = function(conversationId, nMessages, bU
         var polling = function() {
             if (retries < maxRetries) {
                 logger.log(`Poll messages request: ${JSON.stringify(getMessagesOptions)}`);
-                rp(getMessagesOptions)
-                    .then(function(response) {
-                        messages = response.activities;
+                axios.request(getMessagesOptions)
+                    .then(function({ data }) {
+                        messages = data.activities;
                         logger.log(`Got ${messages.length} total activities (including user's response)`);
                         if (messages.length < nExpectedActivities) {
                             logger.log(`We have less than expected ${nExpectedActivities} activities - retry number ${retries + 1}...`);
@@ -109,7 +105,7 @@ DirectLineClient.prototype.pollMessages = function(conversationId, nMessages, bU
                             setTimeout(polling, pollInterval);
                         }
                         else {
-                            self.watermark[conversationId] = response.watermark;
+                            self.watermark[conversationId] = data.watermark;
                             logger.log(`pollMessages messages: ${utils.stringify(messages)}`)
                             resolve(messages);
                         }
