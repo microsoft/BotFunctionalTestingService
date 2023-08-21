@@ -1,7 +1,4 @@
 var _ = require("underscore");
-
-var HTTP = require("./http");
-
 var Transcript = require("./transcript");
 
 var config = require("./config.json");
@@ -10,6 +7,28 @@ const path = require('path');
 const exists = require('util').promisify(fs.exists);
 
 const readFile = require('util').promisify(fs.readFile);
+
+const retry_amount = 3;
+const sleep = require('util').promisify(setTimeout);
+const axios = require('axios');
+
+const executeWithRetries = async (func, ...args) => {
+    for (let retry_count = 0; retry_count < retry_amount; retry_count++) {
+        if (retry_count > 0) {
+            await sleep(retry_count*1000);
+        }
+        try {
+            const content = await func(...args);
+            return content;
+        }
+        catch (err) {
+            if (retry_count === retry_amount - 1) {
+                console.error(err);
+            }
+        }
+    }
+}
+
 
 class TestData {
 
@@ -64,8 +83,8 @@ class TestData {
     static async getTestData(query) {
         var testURL = query.url;
         if (testURL) {
-            var response = await HTTP.getJSON(testURL);
-            return new TestData(response, query);
+            const { data } = await axios.get(testURL);
+            return new TestData(data, query);
         } else if (query.path) {
             const fullTestPath = path.join(config.testsDir, query.path).normalize();
             if (!(await exists(fullTestPath)) || !fullTestPath.startsWith(config.testsDir)) {
@@ -81,8 +100,8 @@ class TestData {
     static async fromObject(obj, defaults) {
         var testData = null;
         if (obj.hasOwnProperty("url") && obj.url) {
-            const response = await HTTP.getJSON(obj.url);
-            testData = new TestData(response, {...defaults, ...obj});
+            const { data } = await executeWithRetries(axios.get, obj.url);
+            testData = new TestData(data, {...defaults, ...obj});
         } else if (obj.hasOwnProperty("path") && obj.path) {
             const content = fs.readFileSync(obj.path);
             testData = new TestData(JSON.parse(content), {...defaults, ...obj});
