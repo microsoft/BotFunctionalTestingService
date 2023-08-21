@@ -83,7 +83,7 @@ class TestData {
     static async getTestData(query) {
         var testURL = query.url;
         if (testURL) {
-            const { data } = axios.get(testURL);
+            const { data } = await axios.get(testURL);
             return new TestData(data, query);
         } else if (query.path) {
             const fullTestPath = path.join(config.testsDir, query.path).normalize();

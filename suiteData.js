@@ -61,7 +61,7 @@ class SuiteData {
     static async getSuiteData(query) {
         var suiteURL = query.url;
         if (suiteURL) {
-            const { data } = axios.get(suiteURL);
+            const { data } = await axios.get(suiteURL);
             return new SuiteData(data, query);
         }
         else {
