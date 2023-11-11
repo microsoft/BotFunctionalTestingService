@@ -16,7 +16,7 @@
   "license": "MIT",
   "dependencies": {
     "applicationinsights": "^2.5.1",
-    "axios": "^1.4.0",
+    "axios": "^1.6.0",
     "body-parser": "^1.20.2",
     "chai": "^4.3.4",
     "deep-object-diff": "^1.0.4",
