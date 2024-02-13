@@ -15,7 +15,6 @@ steps:
   displayName: 'Replace tokens'
   env:
     BUILD_NUMBER: $(Build.BuildNumber)
-#Task group has not been exported, task groups are not supported yet
 - task: Npm@1
   displayName: 'npm install (server)'
   inputs:
@@ -35,21 +34,6 @@ steps:
     workingDir: '$(Build.SourcesDirectory)'
     verbose: false
     customCommand: 'run build'
-- task: Npm@1
-  displayName: 'npm install (client)'
-  inputs:
-    workingDir: 'n/a'
-    verbose: false
-  condition: and(succeeded(), ne(variables['client_folder'], 'n/a'))
-- task: Npm@1
-  displayName: 'npm update  (client)'
-  inputs:
-    command: custom
-    workingDir: 'n/a'
-    verbose: false
-    customCommand: update
-  condition: and(succeeded(), ne(variables['client_folder'], 'n/a'))
-#Task group has not been exported, task groups are not supported yet
 - task: DownloadPipelineArtifact@1
   displayName: 'Download Pipeline Artifact'
   inputs:
@@ -83,7 +67,6 @@ steps:
     action: 'Push an image'
     imageName: 'functionaltestservice:$(Build.BuildNumber)'
     includeLatestTag: true
-#Task group has not been exported, task groups are not supported yet
 - task: DownloadPipelineArtifact@1
   displayName: 'Download Pipeline Artifact - master'
   inputs:
@@ -118,7 +101,6 @@ steps:
     action: 'Push an image'
     imageName: 'functionaltestservice:$(Build.BuildNumber)'
     includeLatestTag: true
-#Task group has not been exported, task groups are not supported yet
 - task: DownloadPipelineArtifact@1
   displayName: 'Download Pipeline Artifact'
   inputs:
