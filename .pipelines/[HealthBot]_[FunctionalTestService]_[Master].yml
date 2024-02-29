@@ -48,7 +48,7 @@ extends:
               $packageJson = Get-Content $packageJsonLocation -raw | ConvertFrom-Json
               $packageJson.description = 'Microsoft Health Bot Functional Tests- build# ' + $BUILD_NUMBER
               $packageJson | ConvertTo-Json  | set-content $packageJsonLocation
-            workingDirectory: $(Build.SourcesDirectory)
+            workingDirectory: '$(Build.SourcesDirectory)/BOTFUNCTIONALTESTINGSERVICE'
           env:
             BUILD_NUMBER: $(Build.BuildNumber)
         - task: Npm@1
