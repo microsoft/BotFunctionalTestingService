@@ -54,20 +54,20 @@ extends:
         - task: Npm@1
           displayName: 'npm install (server)'
           inputs:
-            workingDir: '$(Build.SourcesDirectory)'
+            workingDir: '$(Build.SourcesDirectory)/BOTFUNCTIONALTESTINGSERVICE'
             verbose: false
         - task: Npm@1
           displayName: 'npm update (server)'
           inputs:
             command: custom
-            workingDir: '$(Build.SourcesDirectory)'
+            workingDir: '$(Build.SourcesDirectory)/BOTFUNCTIONALTESTINGSERVICE'
             verbose: false
             customCommand: update
         - task: Npm@1
           displayName: 'npm run build  (server)'
           inputs:
             command: custom
-            workingDir: '$(Build.SourcesDirectory)'
+            workingDir: '$(Build.SourcesDirectory)/BOTFUNCTIONALTESTINGSERVICE'
             verbose: false
             customCommand: 'run build'
         - task: DownloadPipelineArtifact@1
@@ -103,7 +103,7 @@ extends:
           condition: failed()
         - task: CopyFiles@2
           inputs:
-            SourceFolder: '$(Build.SourcesDirectory)'
+            SourceFolder: '$(Build.SourcesDirectory)/BOTFUNCTIONALTESTINGSERVICE'
             Contents: '**'
             TargetFolder: '$(ob_outputDirectory)/dist'
         - task: onebranch.pipeline.imagebuildinfo@1
@@ -131,7 +131,7 @@ extends:
             targetPath: '$(Build.SourcesDirectory)/dst'
         - task: CopyFiles@2
           inputs:
-            SourceFolder: '$(Build.SourcesDirectory)'
+            SourceFolder: '$(Build.SourcesDirectory)/BOTFUNCTIONALTESTINGSERVICE'
             Contents: '**'
             TargetFolder: '$(ob_outputDirectory)/dist'
         - task: onebranch.pipeline.imagebuildinfo@1
