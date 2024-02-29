@@ -41,7 +41,7 @@ extends:
           inputs:
             targetType: 'inline'
             script: |
-                $BUILD_NUMBER = (Get-Childitem env:\BUILD_NUMBER).Value
+              $BUILD_NUMBER = (Get-Childitem env:\BUILD_NUMBER).Value
           
               #package.json
               $packageJsonLocation = 'package.json'
