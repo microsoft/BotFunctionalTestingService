@@ -37,7 +37,7 @@ extends:
           clean: true
           fetchTags: true
         - task: PowerShell@2
-          displayName: 'Create dist folder and copy app, modules and config'
+          displayName: 'Replace Tokens'
           inputs:
             targetType: 'inline'
             script: |
@@ -48,10 +48,9 @@ extends:
               $packageJson = Get-Content $packageJsonLocation -raw | ConvertFrom-Json
               $packageJson.description = 'Microsoft Health Bot Functional Tests- build# ' + $BUILD_NUMBER
               $packageJson | ConvertTo-Json  | set-content $packageJsonLocation
-          displayName: 'Replace tokens'
+            workingDirectory: $(Build.SourcesDirectory)
           env:
             BUILD_NUMBER: $(Build.BuildNumber)
-            workingDirectory: $(Build.SourcesDirectory)
         - task: Npm@1
           displayName: 'npm install (server)'
           inputs:
