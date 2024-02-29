@@ -26,7 +26,7 @@ extends:
         displayName: Phase 1
         cancelTimeoutInMinutes: 1
         pool:
-          type: windows
+          type: linux
         variables:
         - name: ob_outputDirectory
           value: '$(Build.ArtifactStagingDirectory)/ONEBRANCH_ARTIFACT'
@@ -121,14 +121,6 @@ extends:
             enable_network: true
             enable_service_tree_acr_path: false
             arguments: ''
-        - task: DownloadPipelineArtifact@1
-          displayName: 'Download Pipeline Artifact'
-          inputs:
-            buildType: specific
-            project: '$(project)'
-            pipeline: 74
-            artifactName: 'health-bot-functional-tester-dockerfile-master'
-            targetPath: '$(Build.SourcesDirectory)/dst'
         - task: onebranch.pipeline.imagebuildinfo@1
           displayName: "Image build - Prod"
           inputs:
