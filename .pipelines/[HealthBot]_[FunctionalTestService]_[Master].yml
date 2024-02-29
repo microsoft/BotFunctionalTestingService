@@ -26,7 +26,7 @@ extends:
         displayName: Phase 1
         cancelTimeoutInMinutes: 1
         pool:
-          type: linux
+          type: windows
         variables:
         - name: ob_outputDirectory
           value: '$(Build.ArtifactStagingDirectory)/ONEBRANCH_ARTIFACT'
