@@ -129,11 +129,6 @@ extends:
             pipeline: 74
             artifactName: 'health-bot-functional-tester-dockerfile-master'
             targetPath: '$(Build.SourcesDirectory)/dst'
-        - task: CopyFiles@2
-          inputs:
-            SourceFolder: '$(Build.SourcesDirectory)/BOTFUNCTIONALTESTINGSERVICE'
-            Contents: '**'
-            TargetFolder: '$(ob_outputDirectory)/dist'
         - task: onebranch.pipeline.imagebuildinfo@1
           displayName: "Image build - Prod"
           inputs:
