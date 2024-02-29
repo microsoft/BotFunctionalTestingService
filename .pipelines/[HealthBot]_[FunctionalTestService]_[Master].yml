@@ -26,7 +26,7 @@ extends:
         displayName: Phase 1
         cancelTimeoutInMinutes: 1
         pool:
-          type: windows
+          type: linux
         variables:
         - name: ob_outputDirectory
           value: '$(Build.ArtifactStagingDirectory)/ONEBRANCH_ARTIFACT'
@@ -48,26 +48,26 @@ extends:
               $packageJson = Get-Content $packageJsonLocation -raw | ConvertFrom-Json
               $packageJson.description = 'Microsoft Health Bot Functional Tests- build# ' + $BUILD_NUMBER
               $packageJson | ConvertTo-Json  | set-content $packageJsonLocation
-            workingDirectory: '$(Build.SourcesDirectory)/BOTFUNCTIONALTESTINGSERVICE'
+            workingDirectory: '$(Build.SourcesDirectory)/BotFunctionalTestingService'
           env:
             BUILD_NUMBER: $(Build.BuildNumber)
         - task: Npm@1
           displayName: 'npm install (server)'
           inputs:
-            workingDir: '$(Build.SourcesDirectory)/BOTFUNCTIONALTESTINGSERVICE'
+            workingDir: '$(Build.SourcesDirectory)/BotFunctionalTestingService'
             verbose: false
         - task: Npm@1
           displayName: 'npm update (server)'
           inputs:
             command: custom
-            workingDir: '$(Build.SourcesDirectory)/BOTFUNCTIONALTESTINGSERVICE'
+            workingDir: '$(Build.SourcesDirectory)/BotFunctionalTestingService'
             verbose: false
             customCommand: update
         - task: Npm@1
           displayName: 'npm run build  (server)'
           inputs:
             command: custom
-            workingDir: '$(Build.SourcesDirectory)/BOTFUNCTIONALTESTINGSERVICE'
+            workingDir: '$(Build.SourcesDirectory)/BotFunctionalTestingService'
             verbose: false
             customCommand: 'run build'
         - task: DownloadPipelineArtifact@1
@@ -93,7 +93,7 @@ extends:
             targetPath: '$(Build.SourcesDirectory)/dst'
         - task: CopyFiles@2
           inputs:
-            SourceFolder: '$(Build.SourcesDirectory)/BOTFUNCTIONALTESTINGSERVICE'
+            SourceFolder: '$(Build.SourcesDirectory)/BotFunctionalTestingService'
             Contents: '**'
             TargetFolder: '$(ob_outputDirectory)/dist'
         - task: onebranch.pipeline.imagebuildinfo@1
