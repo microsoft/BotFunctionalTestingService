@@ -1,128 +1,153 @@
-pool:
-  name: Azure-Pipelines-mshealthil-EO
-  demands:
-  - ImageOverride -equals ubuntu-1804-1es-compliant-agent-pool-image
-  - npm
-steps:
-- powershell: |
-   $BUILD_NUMBER = (Get-Childitem env:\BUILD_NUMBER).Value
-   
-   #package.json
-   $packageJsonLocation = 'package.json'
-   $packageJson = Get-Content $packageJsonLocation -raw | ConvertFrom-Json
-   $packageJson.description = 'Microsoft Health Bot Functional Tests- build# ' + $BUILD_NUMBER
-   $packageJson | ConvertTo-Json  | set-content $packageJsonLocation
-  displayName: 'Replace tokens'
-  env:
-    BUILD_NUMBER: $(Build.BuildNumber)
-- task: Npm@1
-  displayName: 'npm install (server)'
-  inputs:
-    workingDir: '$(Build.SourcesDirectory)'
-    verbose: false
-- task: Npm@1
-  displayName: 'npm update (server)'
-  inputs:
-    command: custom
-    workingDir: '$(Build.SourcesDirectory)'
-    verbose: false
-    customCommand: update
-- task: Npm@1
-  displayName: 'npm run build  (server)'
-  inputs:
-    command: custom
-    workingDir: '$(Build.SourcesDirectory)'
-    verbose: false
-    customCommand: 'run build'
-- task: DownloadPipelineArtifact@1
-  displayName: 'Download Pipeline Artifact'
-  inputs:
-    buildType: specific
-    project: '$(project)'
-    pipeline: 74
-    artifactName: 'health-bot-functional-tester-dockerfile-master'
-- task: Docker@0
-  displayName: 'Build an image'
-  inputs:
-    azureSubscription: 'hbs-arm-test'
-    azureContainerRegistry: '{"loginServer":"hbscrtest.azurecr.io", "id" : "/subscriptions/$(hbsArmTest)/resourceGroups/hbs-rg-global-test/providers/Microsoft.ContainerRegistry/registries/hbscrtest"}'
-    dockerFile: '$(Build.StagingDirectory)/Dockerfile'
-    defaultContext: false
-    context: '$(Build.SourcesDirectory)'
-    imageName: 'functionaltestservice:$(Build.BuildNumber)'
-    includeLatestTag: true
-- task: ManifestGeneratorTask@0
-  inputs:
-    BuildDropPath: '$(Build.StagingDirectory)'
-- task: PublishPipelineArtifact@1
-  displayName: 'Publish SBOM Manifest'
-  inputs:
-    targetPath: '$(Build.StagingDirectory)/_manifest'
-    artifact: 'SBOM_Manifest'
-- task: Docker@0
-  displayName: 'Push an image'
-  inputs:
-    azureSubscription: 'hbs-arm-test'
-    azureContainerRegistry: '{"loginServer":"hbscrtest.azurecr.io", "id" : "/subscriptions/$(hbsArmTest)/resourceGroups/hbs-rg-global-test/providers/Microsoft.ContainerRegistry/registries/hbscrtest"}'
-    action: 'Push an image'
-    imageName: 'functionaltestservice:$(Build.BuildNumber)'
-    includeLatestTag: true
-- task: DownloadPipelineArtifact@1
-  displayName: 'Download Pipeline Artifact - master'
-  inputs:
-    buildType: specific
-    project: '$(project)'
-    pipeline: 74
-    artifactName: 'health-bot-functional-tester-dockerfile-master'
-- task: DownloadPipelineArtifact@1
-  displayName: 'Download Pipeline Artifact - development'
-  inputs:
-    buildType: specific
-    project: '$(project)'
-    pipeline: 72
-    artifactName: 'health-bot-functional-tester-dockerfile-master'
-  continueOnError: true
-  condition: failed()
-- task: Docker@0
-  displayName: 'Build an image'
-  inputs:
-    azureSubscription: 'Health Agent-DevOps'
-    azureContainerRegistry: '{"loginServer":"hbsdevops.azurecr.io", "id" : "/subscriptions/$(healthAgentDevops)/resourceGroups/HealthAgentDevOpsRG/providers/Microsoft.ContainerRegistry/registries/hbsdevops"}'
-    dockerFile: '$(Build.StagingDirectory)/Dockerfile'
-    defaultContext: false
-    context: '$(Build.SourcesDirectory)'
-    imageName: 'functionaltestservice:$(Build.BuildNumber)'
-    includeLatestTag: true
-- task: Docker@0
-  displayName: 'Push an image'
-  inputs:
-    azureSubscription: 'Health Agent-DevOps'
-    azureContainerRegistry: '{"loginServer":"hbsdevops.azurecr.io", "id" : "/subscriptions/$(healthAgentDevops)/resourceGroups/HealthAgentDevOpsRG/providers/Microsoft.ContainerRegistry/registries/hbsdevops"}'
-    action: 'Push an image'
-    imageName: 'functionaltestservice:$(Build.BuildNumber)'
-    includeLatestTag: true
-- task: DownloadPipelineArtifact@1
-  displayName: 'Download Pipeline Artifact'
-  inputs:
-    buildType: specific
-    project: '$(project)'
-    pipeline: 74
-    artifactName: 'health-bot-functional-tester-dockerfile-master'
-- task: Docker@0
-  displayName: 'Build an image'
-  inputs:
-    azureSubscription: 'hbs-arm-prod'
-    azureContainerRegistry: '{"loginServer":"hbscrprod.azurecr.io", "id" : "/subscriptions/$(hbsArmProd)/resourceGroups/hbs-rg-global-prod/providers/Microsoft.ContainerRegistry/registries/hbscrprod"}'
-    dockerFile: '$(Build.StagingDirectory)/Dockerfile'
-    defaultContext: false
-    context: '$(Build.SourcesDirectory)'
-    imageName: 'functionaltestservice:$(Build.BuildNumber)'
-    includeLatestTag: true
-- task: Docker@0
-  displayName: 'Push an image'
-  inputs:
-    azureSubscription: 'hbs-arm-prod'
-    azureContainerRegistry: '{"loginServer":"hbscrprod.azurecr.io", "id" : "/subscriptions/$(hbsArmProd)/resourceGroups/hbs-rg-global-prod/providers/Microsoft.ContainerRegistry/registries/hbscrprod"}'
-    action: 'Push an image'
-    imageName: 'functionaltestservice:$(Build.BuildNumber)'
-    includeLatestTag: true
+trigger:
+  branches:
+    include:
+    - master
+  batch: True
+name: $(BuildID)__$(Date:yyyy)-$(Date:MM)-$(Date:dd)_$(Hours)-$(Minutes)
+resources:
+  repositories:
+  - repository: onebranchTemplates
+    type: git
+    name: OneBranch.Pipelines/GovernedTemplates
+    ref: refs/heads/main
+variables:
+- name: LinuxContainerImage
+  value: onebranch.azurecr.io/linux/ubuntu-2004:latest
+- name: WindowsContainerImage
+  value: onebranch.azurecr.io/windows/ltsc2019/vse2022:latest
+extends:
+  template: v2/OneBranch.Official.CrossPlat.yml@onebranchTemplates
+  parameters:
+    customTags: 'ES365AIMigrationTooling-BulkMigrated'
+    stages:
+    - stage: stage
+      jobs:
+      - job: Phase_1
+        displayName: Phase 1
+        cancelTimeoutInMinutes: 1
+        pool:
+          type: windows
+        variables:
+        - name: ob_outputDirectory
+          value: '$(Build.ArtifactStagingDirectory)/ONEBRANCH_ARTIFACT'
+        - name: OB_build_container
+          value: true
+        steps:
+        - checkout: self
+          clean: true
+          fetchTags: true
+        - task: PowerShell@2
+          displayName: 'Create dist folder and copy app, modules and config'
+          inputs:
+            targetType: 'inline'
+            script: |
+                $BUILD_NUMBER = (Get-Childitem env:\BUILD_NUMBER).Value
+          
+              #package.json
+              $packageJsonLocation = 'package.json'
+              $packageJson = Get-Content $packageJsonLocation -raw | ConvertFrom-Json
+              $packageJson.description = 'Microsoft Health Bot Functional Tests- build# ' + $BUILD_NUMBER
+              $packageJson | ConvertTo-Json  | set-content $packageJsonLocation
+          displayName: 'Replace tokens'
+          env:
+            BUILD_NUMBER: $(Build.BuildNumber)
+            workingDirectory: $(Build.SourcesDirectory)
+        - task: Npm@1
+          displayName: 'npm install (server)'
+          inputs:
+            workingDir: '$(Build.SourcesDirectory)'
+            verbose: false
+        - task: Npm@1
+          displayName: 'npm update (server)'
+          inputs:
+            command: custom
+            workingDir: '$(Build.SourcesDirectory)'
+            verbose: false
+            customCommand: update
+        - task: Npm@1
+          displayName: 'npm run build  (server)'
+          inputs:
+            command: custom
+            workingDir: '$(Build.SourcesDirectory)'
+            verbose: false
+            customCommand: 'run build'
+        - task: DownloadPipelineArtifact@1
+          displayName: 'Download Pipeline Artifact'
+          inputs:
+            buildType: specific
+            project: '$(project)'
+            pipeline: 74
+            artifactName: 'health-bot-functional-tester-dockerfile-master'
+            targetPath: '$(Build.SourcesDirectory)/dst'
+        # - task: PublishPipelineArtifact@1
+        #   displayName: 'Publish SBOM Manifest'
+        #   inputs:
+        #     targetPath: '$(Build.StagingDirectory)/_manifest'
+        #     artifact: 'SBOM_Manifest'
+        - task: DownloadPipelineArtifact@1
+          displayName: 'Download Pipeline Artifact - master'
+          inputs:
+            buildType: specific
+            project: '$(project)'
+            pipeline: 74
+            artifactName: 'health-bot-functional-tester-dockerfile-master'
+            targetPath: '$(Build.SourcesDirectory)/dst'
+        - task: DownloadPipelineArtifact@1
+          displayName: 'Download Pipeline Artifact - development'
+          inputs:
+            buildType: specific
+            project: '$(project)'
+            pipeline: 72
+            artifactName: 'health-bot-functional-tester-dockerfile-master'
+            targetPath: '$(Build.SourcesDirectory)/dst'
+          continueOnError: true
+          condition: failed()
+        - task: CopyFiles@2
+          inputs:
+            SourceFolder: '$(Build.SourcesDirectory)'
+            Contents: '**'
+            TargetFolder: '$(ob_outputDirectory)/dist'
+        - task: onebranch.pipeline.imagebuildinfo@1
+          displayName: "Image build - Test"
+          inputs:
+            buildkit: 1
+            repositoryName: functionaltestservice
+            dockerFileRelPath: ./artifacts/Dockerfile-v2
+            dockerFileContextPath: ./artifacts/dist
+            registry: hbscrtest.azurecr.io
+            build_tag: '$(Build.BuildNumber)' # multiple tags are not supported
+            enable_acr_push: true
+            saveImageToPath: functionaltestservice-test.tar
+            endpoint: hbs-acr-test
+            enable_network: true
+            enable_service_tree_acr_path: false
+            arguments: ''
+        - task: DownloadPipelineArtifact@1
+          displayName: 'Download Pipeline Artifact'
+          inputs:
+            buildType: specific
+            project: '$(project)'
+            pipeline: 74
+            artifactName: 'health-bot-functional-tester-dockerfile-master'
+            targetPath: '$(Build.SourcesDirectory)/dst'
+                - task: CopyFiles@2
+        - task: CopyFiles@2
+          inputs:
+            SourceFolder: '$(Build.SourcesDirectory)'
+            Contents: '**'
+            TargetFolder: '$(ob_outputDirectory)/dist'
+        - task: onebranch.pipeline.imagebuildinfo@1
+          displayName: "Image build - Prod"
+          inputs:
+            buildkit: 1
+            repositoryName: functionaltestservice
+            dockerFileRelPath: ./artifacts/Dockerfile-v2
+            dockerFileContextPath: ./artifacts/dist
+            registry: hbscrprod.azurecr.io
+            build_tag: '$(Build.BuildNumber)' # multiple tags are not supported
+            enable_acr_push: true
+            saveImageToPath: functionaltestservice-prod.tar
+            endpoint: hbs-acr-prod
+            enable_network: true
+            enable_service_tree_acr_path: false
+            arguments: ''
