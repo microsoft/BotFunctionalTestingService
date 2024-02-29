@@ -91,16 +91,6 @@ extends:
             pipeline: 74
             artifactName: 'health-bot-functional-tester-dockerfile-master'
             targetPath: '$(Build.SourcesDirectory)/dst'
-        - task: DownloadPipelineArtifact@1
-          displayName: 'Download Pipeline Artifact - development'
-          inputs:
-            buildType: specific
-            project: '$(project)'
-            pipeline: 72
-            artifactName: 'health-bot-functional-tester-dockerfile-master'
-            targetPath: '$(Build.SourcesDirectory)/dst'
-          continueOnError: true
-          condition: failed()
         - task: CopyFiles@2
           inputs:
             SourceFolder: '$(Build.SourcesDirectory)/BOTFUNCTIONALTESTINGSERVICE'
@@ -111,7 +101,7 @@ extends:
           inputs:
             buildkit: 1
             repositoryName: functionaltestservice
-            dockerFileRelPath: ./artifacts/Dockerfile-v2
+            dockerFileRelPath: ./artifacts/Dockerfile
             dockerFileContextPath: ./artifacts/dist
             registry: hbscrtest.azurecr.io
             build_tag: '$(Build.BuildNumber)' # multiple tags are not supported
@@ -126,7 +116,7 @@ extends:
           inputs:
             buildkit: 1
             repositoryName: functionaltestservice
-            dockerFileRelPath: ./artifacts/Dockerfile-v2
+            dockerFileRelPath: ./artifacts/Dockerfile
             dockerFileContextPath: ./artifacts/dist
             registry: hbscrprod.azurecr.io
             build_tag: '$(Build.BuildNumber)' # multiple tags are not supported
