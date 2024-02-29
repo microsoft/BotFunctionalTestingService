@@ -129,7 +129,6 @@ extends:
             pipeline: 74
             artifactName: 'health-bot-functional-tester-dockerfile-master'
             targetPath: '$(Build.SourcesDirectory)/dst'
-                - task: CopyFiles@2
         - task: CopyFiles@2
           inputs:
             SourceFolder: '$(Build.SourcesDirectory)'
