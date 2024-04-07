@@ -78,11 +78,17 @@ extends:
             pipeline: 74
             artifactName: 'health-bot-functional-tester-dockerfile-master'
             targetPath: '$(Build.SourcesDirectory)/dst'
-        # - task: PublishPipelineArtifact@1
-        #   displayName: 'Publish SBOM Manifest'
-        #   inputs:
-        #     targetPath: '$(Build.StagingDirectory)/_manifest'
-        #     artifact: 'SBOM_Manifest'
+        
+        - task: ManifestGeneratorTask@0
+            inputs:
+              BuildDropPath: '$(Build.StagingDirectory)'
+
+        - task: CopyFiles@2
+          inputs:
+            SourceFolder: '$(Build.StagingDirectory)/_manifest'
+            Contents: '**'
+            TargetFolder: '$(Build.ArtifactStagingDirectory)/ONEBRANCH_ARTIFACT/SBOM_Manifest'
+
         - task: DownloadPipelineArtifact@1
           displayName: 'Download Pipeline Artifact - master'
           inputs:
