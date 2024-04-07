@@ -80,8 +80,8 @@ extends:
             targetPath: '$(Build.SourcesDirectory)/dst'
         
         - task: ManifestGeneratorTask@0
-            inputs:
-              BuildDropPath: '$(Build.StagingDirectory)'
+          inputs:
+            BuildDropPath: '$(Build.StagingDirectory)'
 
         - task: CopyFiles@2
           inputs:
