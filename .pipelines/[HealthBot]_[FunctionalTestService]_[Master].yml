@@ -10,6 +10,13 @@ resources:
     type: git
     name: OneBranch.Pipelines/GovernedTemplates
     ref: refs/heads/main
+  pipelines:
+  - pipeline: '[HealthBotDevOps] [dockerfile] [master]'
+    source: '[HealthBotDevOps] [dockerfile] [master]'
+    trigger:
+      branches:
+        include:
+        - refs/heads/master
 variables:
 - name: LinuxContainerImage
   value: onebranch.azurecr.io/linux/ubuntu-2004:latest
