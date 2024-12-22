@@ -1,7 +1,7 @@
 trigger:
   branches:
     include:
-    - master
+    - refs/heads/master
   batch: True
 name: $(BuildID)__$(Date:yyyy)-$(Date:MM)-$(Date:dd)_$(Hours)-$(Minutes)
 resources:
