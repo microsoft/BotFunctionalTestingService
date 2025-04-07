@@ -10,6 +10,14 @@ resources:
     type: git
     name: OneBranch.Pipelines/GovernedTemplates
     ref: refs/heads/main
+  - repository: pes-utils
+    type: git
+    name: pes-utils
+    ref: refs/heads/Majd-Zayyad-MSFT/infermedica-templates
+  - repository: HealthBotDevOps
+    type: git
+    name: HealthBotDevOps
+    ref: refs/heads/master
   pipelines:
   - pipeline: '[HealthBotDevOps] [dockerfile] [master]'
     source: '[HealthBotDevOps] [dockerfile] [master]'
@@ -139,3 +147,15 @@ extends:
             enable_network: true
             enable_service_tree_acr_path: false
             arguments: ''
+
+        - template: pipelines/templates/prepare-for-release.yml@pes-utils
+          parameters:
+            env: test
+            regionShort: eaus
+            appName: functionaltestservice
+            imageTag: $(Build.BuildNumber)
+
+        - template: pipelines/templates/prepare-for-release-all-regions.yml@pes-utils
+          parameters:
+            appName: functionaltestservice
+            imageTag: $(Build.BuildNumber)
