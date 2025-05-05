@@ -50,12 +50,12 @@ extends:
         steps:
         - checkout: self
           clean: true
+          fetchTags: true
         - task: NodeTool@0
           displayName: 'Install Node.js 20.x'
           inputs:
             versionSource: 'spec'
             versionSpec: '20.x'
-          fetchTags: true
         - task: PowerShell@2
           displayName: 'Replace Tokens'
           inputs:
