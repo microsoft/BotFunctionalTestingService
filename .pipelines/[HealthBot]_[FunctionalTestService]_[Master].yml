@@ -157,10 +157,10 @@ extends:
           parameters:
             env: test
             regionShort: eaus
-            appName: functionaltestservice
+            appName: bot-functional-tester
             imageTag: $(Build.BuildNumber)
 
         - template: pipelines/templates/prepare-for-release-all-regions.yml@pes-utils
           parameters:
-            appName: functionaltestservice
+            appName: bot-functional-tester
             imageTag: $(Build.BuildNumber)
