@@ -159,8 +159,10 @@ extends:
             regionShort: eaus
             appName: bot-functional-tester
             imageTag: $(Build.BuildNumber)
+            valuesFile: functional-tester-values
 
         - template: pipelines/templates/prepare-for-release-all-regions.yml@pes-utils
           parameters:
             appName: bot-functional-tester
             imageTag: $(Build.BuildNumber)
+            valuesFile: functional-tester-values
