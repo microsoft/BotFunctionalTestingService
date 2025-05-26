@@ -13,7 +13,7 @@ resources:
   - repository: pes-utils
     type: git
     name: pes-utils
-    ref: refs/heads/main
+    ref: refs/heads/task/Majd-Zayyad-MSFT/monorepo-build-template-dev
   - repository: HealthBotDevOps
     type: git
     name: HealthBotDevOps
