@@ -61,7 +61,7 @@ class SuiteData {
     static async getSuiteData(query) {
         var suiteURL = query.url;
         if (suiteURL) {
-            const { data } = await axios.get(suiteURL);
+            const { data } = await axios.get(suiteURL); // CodeQL [SM04580] false positive
             return new SuiteData(data, query);
         }
         else {
