@@ -10,6 +10,14 @@ resources:
     type: git
     name: OneBranch.Pipelines/GovernedTemplates
     ref: refs/heads/main
+  - repository: pes-utils
+    type: git
+    name: pes-utils
+    ref: refs/heads/main
+  - repository: HealthBotDevOps
+    type: git
+    name: HealthBotDevOps
+    ref: refs/heads/master
   pipelines:
   - pipeline: '[HealthBotDevOps] [dockerfile] [master]'
     source: '[HealthBotDevOps] [dockerfile] [master]'
@@ -19,7 +27,7 @@ resources:
         - refs/heads/master
 variables:
 - name: LinuxContainerImage
-  value: onebranch.azurecr.io/linux/ubuntu-2004:latest
+  value: mcr.microsoft.com/onebranch/azurelinux/build:3.0
 - name: WindowsContainerImage
   value: onebranch.azurecr.io/windows/ltsc2019/vse2022:latest
 extends:
@@ -43,6 +51,11 @@ extends:
         - checkout: self
           clean: true
           fetchTags: true
+        - task: NodeTool@0
+          displayName: 'Install Node.js 20.x'
+          inputs:
+            versionSource: 'spec'
+            versionSpec: '20.x'
         - task: PowerShell@2
           displayName: 'Replace Tokens'
           inputs:
@@ -139,3 +152,17 @@ extends:
             enable_network: true
             enable_service_tree_acr_path: false
             arguments: ''
+
+        - template: pipelines/templates/prepare-for-release.yml@pes-utils
+          parameters:
+            env: test
+            regionShort: eaus
+            appName: bot-functional-tester
+            imageTag: $(Build.BuildNumber)
+            valuesFile: values-functional-tester
+
+        - template: pipelines/templates/prepare-for-release-all-regions.yml@pes-utils
+          parameters:
+            appName: bot-functional-tester
+            imageTag: $(Build.BuildNumber)
+            valuesFile: values-functional-tester

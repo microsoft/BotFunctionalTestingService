@@ -83,7 +83,7 @@ DirectLineClient.prototype.pollMessages = function(conversationId, nMessages, bU
 
     var getMessagesOptions = {
         method: "GET",
-        url: getConversationUrl(conversationId, customDirectlineDomain) + (this.watermark[conversationId] ? "?watermark=" + this.watermark[conversationId] : ""),
+        url: getConversationUrl(conversationId, customDirectlineDomain) + (this.watermark[conversationId] ? "?watermark=" + this.watermark[conversationId] : ""), // CodeQL [SM04580] false positive
         headers: self.headers[conversationId]
     };
 
@@ -140,3 +140,4 @@ function getDirectLineStartConversationUrl(customDirectlineDomain) {
 }
 
 module.exports = new DirectLineClient();
+
