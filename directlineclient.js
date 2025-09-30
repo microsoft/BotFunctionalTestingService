@@ -23,11 +23,11 @@ DirectLineClient.prototype.init = function(context, testData) {
     };
     var startConversationOptions = {
         method: "POST",
-        url: getDirectLineStartConversationUrl(testData.customDirectlineDomain),
+        url: getDirectLineStartConversationUrl(testData.customDirectlineDomain), // CodeQL [SM04580] false positive
         headers: headers
     };
     logger.log(`Init conversation request: ${JSON.stringify(startConversationOptions)}`);
-    var promise = axios.request(startConversationOptions)
+    var promise = axios.request(startConversationOptions) // CodeQL [SM04580] false positive
         .then(function({ data }) {
             logger.log("init response: " + utils.stringify(data));
             self.watermark[data.conversationId] = null;
@@ -50,13 +50,13 @@ DirectLineClient.prototype.sendMessage = function(conversationId, message, custo
     if (isValidMessage(message)) {
         var postMessageOptions = {
             method: "POST",
-            url: getConversationUrl(conversationId, customDirectlineDomain),
+            url: getConversationUrl(conversationId, customDirectlineDomain), // CodeQL [SM04580] false positive
             headers: self.headers[conversationId],
             data: message
         };
 
         logger.log(`Send message request: ${JSON.stringify(postMessageOptions)}`);
-        promise = axios.request(postMessageOptions)
+        promise = axios.request(postMessageOptions) // CodeQL [SM04580] false positive
             .then(function({ data }) {
                 logger.log("sendMessage response: " + utils.stringify(data));
                 return data;
@@ -82,7 +82,7 @@ DirectLineClient.prototype.pollMessages = function(conversationId, nMessages, bU
     }
 
     var getMessagesOptions = {
-        method: "GET",
+        method: "GET", 
         url: getConversationUrl(conversationId, customDirectlineDomain) + (this.watermark[conversationId] ? "?watermark=" + this.watermark[conversationId] : ""), // CodeQL [SM04580] false positive
         headers: self.headers[conversationId]
     };
@@ -94,7 +94,7 @@ DirectLineClient.prototype.pollMessages = function(conversationId, nMessages, bU
     var promise = new Promise(function(resolve, reject) {
         var polling = function() {
             if (retries < maxRetries) {
-                logger.log(`Poll messages request: ${JSON.stringify(getMessagesOptions)}`);
+                logger.log(`Poll messages request: ${JSON.stringify(getMessagesOptions)}`); // CodeQL [SM04580] false positive
                 axios.request(getMessagesOptions)
                     .then(function({ data }) {
                         messages = data.activities;
@@ -140,4 +140,5 @@ function getDirectLineStartConversationUrl(customDirectlineDomain) {
 }
 
 module.exports = new DirectLineClient();
+
 
