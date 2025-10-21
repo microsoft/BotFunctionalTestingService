@@ -61,7 +61,7 @@ class SuiteData {
     static async getSuiteData(query) {
         var suiteURL = query.url;
         if (suiteURL) {
-            const { data } = await axios.get(suiteURL); // CodeQL [SM04580] false positive
+            const { data } = await axios.get(suiteURL); // CodeQL [SM04580] this is a closed api that is only accessible to an internal testing service, so the ssrf risk is mitigated
             return new SuiteData(data, query);
         }
         else {

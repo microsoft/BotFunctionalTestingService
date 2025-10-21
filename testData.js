@@ -83,7 +83,7 @@ class TestData {
     static async getTestData(query) {
         var testURL = query.url;
         if (testURL) {
-            const { data } = await axios.get(testURL); // CodeQL [SM04580] false positive
+            const { data } = await axios.get(testURL); // CodeQL [SM04580] this is a closed api that is only accessible to an internal testing service, so the ssrf risk is mitigated
             return new TestData(data, query);
         } else if (query.path) {
             const fullTestPath = path.join(config.testsDir, query.path).normalize();
@@ -118,4 +118,5 @@ class TestData {
 }
 
 module.exports = TestData;
+
 
