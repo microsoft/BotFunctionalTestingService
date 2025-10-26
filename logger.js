@@ -29,4 +29,30 @@ function consoleLogger() {
     };
 }
 
-module.exports = process.env[keyEnvVarName] ? telemetryClientLogger() : consoleLogger();
+function censorSecrets(obj, paths) {
+    if (!obj || !paths) {
+        return;
+    }
+
+    for (const path of paths) {
+        const pathParts = path.split('.');
+        let current = obj;
+        for (let i = 0; i < pathParts.length - 1; i++) {
+            if (current && typeof current === 'object' && current[pathParts[i]] !== undefined) {
+                current = current[pathParts[i]];
+            } else {
+                current = undefined;
+                break;
+            }
+        }
+
+        if (current && typeof current === 'object' && current[pathParts[pathParts.length - 1]] !== undefined) {
+            current[pathParts[pathParts.length - 1]] = '****';
+        }
+    }
+}
+
+const logger = process.env[keyEnvVarName] ? telemetryClientLogger() : consoleLogger();
+logger.censorSecrets = censorSecrets;
+
+module.exports = logger;

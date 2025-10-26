@@ -26,10 +26,10 @@ DirectLineClient.prototype.init = function(context, testData) {
         url: getDirectLineStartConversationUrl(testData.customDirectlineDomain), // CodeQL [SM04580] this is a closed api that is only accessible to an internal testing service, so the ssrf risk is mitigated
         headers: headers
     };
-    logger.log(`Init conversation request: ${JSON.stringify(startConversationOptions)}`);
+    logger.log(`Init conversation request: ${JSON.stringify(logger.censorSecrets(startConversationOptions, ['headers.Authorization']))}`); // Censor the secret in logs
     var promise = axios.request(startConversationOptions) // CodeQL [SM04580] this is a closed api that is only accessible to an internal testing service, so the ssrf risk is mitigated
         .then(function({ data }) {
-            logger.log("init response: " + utils.stringify(data));
+            logger.log("init response: " + utils.stringify(logger.censorSecrets(data, ['token'])));
             self.watermark[data.conversationId] = null;
             self.headers[data.conversationId] = headers;
             return data;
@@ -55,7 +55,7 @@ DirectLineClient.prototype.sendMessage = function(conversationId, message, custo
             data: message
         };
 
-        logger.log(`Send message request: ${JSON.stringify(postMessageOptions)}`);
+        logger.log(`Send message request: ${JSON.stringify(logger.censorSecrets(postMessageOptions, ['headers.Authorization']))}`);
         promise = axios.request(postMessageOptions) // CodeQL [SM04580] this is a closed api that is only accessible to an internal testing service, so the ssrf risk is mitigated
             .then(function({ data }) {
                 logger.log("sendMessage response: " + utils.stringify(data));
@@ -94,7 +94,7 @@ DirectLineClient.prototype.pollMessages = function(conversationId, nMessages, bU
     var promise = new Promise(function(resolve, reject) {
         var polling = function() {
             if (retries < maxRetries) {
-                logger.log(`Poll messages request: ${JSON.stringify(getMessagesOptions)}`); // CodeQL [SM04580] this is a closed api that is only accessible to an internal testing service, so the ssrf risk is mitigated
+                logger.log(`Poll messages request: ${JSON.stringify(logger.censorSecrets(getMessagesOptions, ['headers.Authorization']))}`); // CodeQL [SM04580] this is a closed api that is only accessible to an internal testing service, so the ssrf risk is mitigated
                 axios.request(getMessagesOptions)
                     .then(function({ data }) {
                         messages = data.activities;
