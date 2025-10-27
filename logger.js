@@ -30,13 +30,14 @@ function consoleLogger() {
 }
 
 function censorSecrets(obj, paths) {
-    if (!obj || !paths) {
+    const copy = {...obj};
+    if (!copy || !paths) {
         return;
     }
 
     for (const path of paths) {
         const pathParts = path.split('.');
-        let current = obj;
+        let current = copy;
         for (let i = 0; i < pathParts.length - 1; i++) {
             if (current && typeof current === 'object' && current[pathParts[i]] !== undefined) {
                 current = current[pathParts[i]];
@@ -50,6 +51,7 @@ function censorSecrets(obj, paths) {
             current[pathParts[pathParts.length - 1]] = '****';
         }
     }
+    return copy;
 }
 
 const logger = process.env[keyEnvVarName] ? telemetryClientLogger() : consoleLogger();
