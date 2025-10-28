@@ -29,4 +29,32 @@ function consoleLogger() {
     };
 }
 
-module.exports = process.env[keyEnvVarName] ? telemetryClientLogger() : consoleLogger();
+function censorSecrets(obj, paths) {
+    const copy = structuredClone(obj);
+    if (!copy || !paths) {
+        return copy;
+    }
+
+    for (const path of paths) {
+        const pathParts = path.split('.');
+        const lastPathPart = pathParts.pop();
+        let current = copy;
+
+        // Traverse to the parent object
+        for (const pathPart of pathParts) {
+            current = current?.[pathPart];
+            if (!current) break;
+        }
+
+        // Censor the final property if it exists
+        if (current?.[lastPathPart] !== undefined) {
+            current[lastPathPart] = '****';
+        }
+    }
+    return copy;
+}
+
+const logger = process.env[keyEnvVarName] ? telemetryClientLogger() : consoleLogger();
+logger.censorSecrets = censorSecrets;
+
+module.exports = logger;
