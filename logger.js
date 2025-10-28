@@ -30,25 +30,25 @@ function consoleLogger() {
 }
 
 function censorSecrets(obj, paths) {
-    const copy = {...obj};
+    const copy = structuredClone(obj);
     if (!copy || !paths) {
-        return;
+        return copy;
     }
 
     for (const path of paths) {
         const pathParts = path.split('.');
+        const lastPathPart = pathParts.pop();
         let current = copy;
-        for (let i = 0; i < pathParts.length - 1; i++) {
-            if (current && typeof current === 'object' && current[pathParts[i]] !== undefined) {
-                current = current[pathParts[i]];
-            } else {
-                current = undefined;
-                break;
-            }
+
+        // Traverse to the parent object
+        for (const pathPart of pathParts) {
+            current = current?.[pathPart];
+            if (!current) break;
         }
 
-        if (current && typeof current === 'object' && current[pathParts[pathParts.length - 1]] !== undefined) {
-            current[pathParts[pathParts.length - 1]] = '****';
+        // Censor the final property if it exists
+        if (current?.[lastPathPart] !== undefined) {
+            current[lastPathPart] = '****';
         }
     }
     return copy;
