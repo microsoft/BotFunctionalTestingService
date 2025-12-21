@@ -107,7 +107,7 @@ extends:
           inputs:
             SourceFolder: '$(Build.StagingDirectory)/_manifest'
             Contents: '**'
-            TargetFolder: '$(Build.ArtifactStagingDirectory)/ONEBRANCH_ARTIFACT/SBOM_Manifest'
+            TargetFolder: '$(Build.ArtifactStagingDirectory)/ONEBRANCH_ARTIFACT/_manifest'
 
         - task: DownloadPipelineArtifact@1
           displayName: 'Download Pipeline Artifact - master'
