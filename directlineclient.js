@@ -95,7 +95,7 @@ DirectLineClient.prototype.pollMessages = function(conversationId, nMessages, bU
         var polling = function() {
             if (retries < maxRetries) {
                 logger.log(`Poll messages request: ${JSON.stringify(logger.censorSecrets(getMessagesOptions, ['headers.Authorization']))}`); // CodeQL [SM04580] this is a closed api that is only accessible to an internal testing service, so the ssrf risk is mitigated
-                axios.request(getMessagesOptions)
+                axios.request(getMessagesOptions) // CodeQL [SM04580] this is a closed api that is only accessible to an internal testing service, so the ssrf risk is mitigated
                     .then(function({ data }) {
                         messages = data.activities;
                         logger.log(`Got ${messages.length} total activities (including user's response)`);
@@ -140,6 +140,7 @@ function getDirectLineStartConversationUrl(customDirectlineDomain) {
 }
 
 module.exports = new DirectLineClient();
+
 
 
 
