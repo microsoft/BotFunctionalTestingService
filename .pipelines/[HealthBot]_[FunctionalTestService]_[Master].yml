@@ -31,7 +31,11 @@ variables:
 - name: WindowsContainerImage
   value: onebranch.azurecr.io/windows/ltsc2019/vse2022:latest
 extends:
-  template: v2/OneBranch.NonOfficial.CrossPlat.yml@onebranchTemplates
+  template: v2/OneBranch.Official.CrossPlat.yml@onebranchTemplates
+  parameters:
+    globalSdl:
+      tsa:
+        enabled: false
   parameters:
     customTags: 'ES365AIMigrationTooling-BulkMigrated'
     stages:
