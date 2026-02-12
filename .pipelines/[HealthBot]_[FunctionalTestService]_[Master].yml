@@ -1,7 +1,7 @@
 trigger:
   branches:
     include:
-    - refs/heads/main
+    - refs/heads/master
   batch: True
 name: $(BuildID)__$(Date:yyyy)-$(Date:MM)-$(Date:dd)_$(Hours)-$(Minutes)
 resources:
@@ -17,14 +17,14 @@ resources:
   - repository: HealthBotDevOps
     type: git
     name: HealthBotDevOps
-    ref: refs/heads/master
+    ref: refs/heads/main
   pipelines:
   - pipeline: '[HealthBotDevOps] [dockerfile] [master]'
     source: '[HealthBotDevOps] [dockerfile] [master]'
     trigger:
       branches:
         include:
-        - refs/heads/master
+        - refs/heads/main
 variables:
 - name: LinuxContainerImage
   value: mcr.microsoft.com/onebranch/azurelinux/build:3.0
