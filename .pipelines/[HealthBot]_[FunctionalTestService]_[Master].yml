@@ -36,7 +36,6 @@ extends:
     globalSdl:
       tsa:
         enabled: false
-  parameters:
     customTags: 'ES365AIMigrationTooling-BulkMigrated'
     stages:
     - stage: stage
