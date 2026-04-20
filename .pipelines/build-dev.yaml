@@ -1,3 +1,5 @@
+name: $(BuildID)__$(Date:yyyy)-$(Date:MM)-$(Date:dd)_$(Hours)-$(Minutes)
+
 trigger:
   branches:
     include:
