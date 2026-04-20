@@ -1,5 +1,3 @@
-# Place this file in BotFunctionalTestingService repo as .pipelines/trigger-build-main.yaml
-
 trigger:
   branches:
     include:
