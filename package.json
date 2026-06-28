@@ -15,7 +15,7 @@
   "author": "Arie Schwartzman + Gil Shacham",
   "license": "MIT",
   "dependencies": {
-    "applicationinsights": "^2.5.1",
+    "applicationinsights": "^3.15.1",
     "axios": "^1.6.8",
     "body-parser": "^1.20.2",
     "chai": "^4.3.4",
@@ -24,5 +24,8 @@
     "express": "^4.19.2",
     "sanitize-filename": "^1.6.3",
     "underscore": "^1.13.1"
+  },
+  "overrides": {
+    "@opentelemetry/core": "^2.8.0"
   }
 }
