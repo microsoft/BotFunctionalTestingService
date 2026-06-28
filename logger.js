@@ -4,8 +4,14 @@ const config = require("./config.json");
 
 const keyEnvVarName = "ApplicationInsightsInstrumentationKey";
 
+// applicationinsights v3 requires a connection string. Older configurations may
+// supply a bare instrumentation key (GUID); normalize it so both forms work.
+function toConnectionString(value) {
+    return value.includes("=") ? value : `InstrumentationKey=${value}`;
+}
+
 function telemetryClientLogger() {
-    const telemetryClient = new TelemetryClient(process.env[keyEnvVarName]);
+    const telemetryClient = new TelemetryClient(toConnectionString(process.env[keyEnvVarName]));
     telemetryClient.context.tags["ai.cloud.role"] = process.env["roleName"] || config.defaults.defaultRoleName;
 
     return {
