@@ -17,7 +17,7 @@
   "dependencies": {
     "applicationinsights": "^3.15.1",
     "axios": "^1.6.8",
-    "body-parser": "^1.20.2",
+    "body-parser": "^1.20.9",
     "chai": "^4.3.4",
     "deep-object-diff": "^1.0.4",
     "dotenv": "^8.6.0",
@@ -26,6 +26,8 @@
     "underscore": "^1.13.1"
   },
   "overrides": {
+    "@azure/identity": "^4.14.1",
+    "body-parser": "$body-parser",
     "@opentelemetry/core": "^2.8.0"
   }
 }
